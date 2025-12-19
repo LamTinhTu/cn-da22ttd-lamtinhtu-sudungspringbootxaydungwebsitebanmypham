@@ -2,7 +2,7 @@ package com.oceanbutterflyshop.backend.mappers;
 
 import org.springframework.stereotype.Component;
 
-import com.oceanbutterflyshop.backend.dtos.request.ProductRequest;
+import com.oceanbutterflyshop.backend.dtos.request.ProductRequestDTO;
 import com.oceanbutterflyshop.backend.dtos.response.ImageResponse;
 import com.oceanbutterflyshop.backend.dtos.response.ProductResponse;
 import com.oceanbutterflyshop.backend.entities.Brand;
@@ -18,7 +18,7 @@ public class ProductMapper {
      * Convert ProductRequest to Product entity
      * Note: productCode will be set by the service using CodeGeneratorUtils
      */
-    public Product toEntity(ProductRequest request, Brand brand) {
+    public Product toEntity(ProductRequestDTO request, Brand brand) {
         if (request == null) {
             return null;
         }
@@ -28,6 +28,7 @@ public class ProductMapper {
         product.setProductDescription(request.getProductDescription());
         product.setProductPrice(request.getProductPrice()); // Already BigDecimal
         product.setQuantityStock(request.getQuantityStock());
+        product.setProductStatus(request.getProductStatus());
         product.setBrand(brand);
         
         return product;
@@ -36,7 +37,7 @@ public class ProductMapper {
     /**
      * Update existing Product entity with ProductRequest data
      */
-    public void updateEntity(Product product, ProductRequest request, Brand brand) {
+    public void updateEntity(Product product, ProductRequestDTO request, Brand brand) {
         if (product == null || request == null) {
             return;
         }
@@ -45,6 +46,7 @@ public class ProductMapper {
         product.setProductDescription(request.getProductDescription());
         product.setProductPrice(request.getProductPrice()); // Already BigDecimal
         product.setQuantityStock(request.getQuantityStock());
+        product.setProductStatus(request.getProductStatus());
         product.setBrand(brand);
     }
     

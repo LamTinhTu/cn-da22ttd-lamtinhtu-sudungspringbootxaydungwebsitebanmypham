@@ -1,9 +1,9 @@
 package com.oceanbutterflyshop.backend.enums;
 
 public enum Gender {
-    NAM("Nam"),
-    NU("Nu"),
-    KHAC("Khac");
+    MALE("Nam"),
+    FEMALE("Nữ"),
+    OTHER("Khác");
 
     private final String displayName;
 

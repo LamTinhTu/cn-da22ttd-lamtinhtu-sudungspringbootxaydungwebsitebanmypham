@@ -1,9 +1,9 @@
 package com.oceanbutterflyshop.backend.enums;
 
 public enum PaymentMethod {
-    CASH("CASH"),
-    BANK_TRANSFER("BANK_TRANSFER"),
-    CARD("CARD");
+    CASH("Tiền mặt"),
+    BANK_TRANSFER("Chuyển khoản"),
+    CARD("Thẻ tín dụng");
 
     private final String displayName;
 

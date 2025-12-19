@@ -12,7 +12,7 @@ public interface OrderService {
     List<OrderResponse> getOrdersByStatus(String status);
     OrderResponse getOrderById(Integer orderId);
     OrderResponse getOrderByCode(String orderCode);
-    OrderResponse createOrder(OrderRequest orderRequest);
+    OrderResponse createOrder(OrderRequest orderRequest, String username);
     OrderResponse updateOrderStatus(Integer orderId, String newStatus);
     OrderResponse updatePayment(Integer orderId, String paymentMethod);
     void cancelOrder(Integer orderId);

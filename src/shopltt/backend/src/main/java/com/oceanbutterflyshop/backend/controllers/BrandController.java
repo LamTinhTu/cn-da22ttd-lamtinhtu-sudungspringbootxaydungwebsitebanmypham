@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
-@RequestMapping("/api/brands")
+@RequestMapping("/api/v1/brands")
 @RequiredArgsConstructor
 @Tag(name = "Brand Management", description = "APIs for managing brands")
 public class BrandController {
@@ -48,6 +49,7 @@ public class BrandController {
 
     @Operation(summary = "Create a new brand")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<BrandResponse>> createBrand(@Valid @RequestBody BrandRequest brandRequest) {
         BrandResponse createdBrand = brandService.createBrand(brandRequest);
         return new ResponseEntity<>(
@@ -58,6 +60,7 @@ public class BrandController {
 
     @Operation(summary = "Update brand")
     @PutMapping("/{brandId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<BrandResponse>> updateBrand(
             @PathVariable Integer brandId,
             @Valid @RequestBody BrandRequest brandRequest){
@@ -67,6 +70,7 @@ public class BrandController {
 
     @Operation(summary = "Delete brand")
     @DeleteMapping("/{brandId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<Object>> deleteBrand(@PathVariable Integer brandId){
         brandService.deleteBrand(brandId);
         return ResponseEntity.ok(ApiResponse.success("Brand deleted successfully", null));

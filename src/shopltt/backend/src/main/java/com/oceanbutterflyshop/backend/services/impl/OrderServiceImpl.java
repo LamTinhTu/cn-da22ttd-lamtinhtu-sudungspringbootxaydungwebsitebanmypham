@@ -81,10 +81,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse createOrder(OrderRequest orderRequest) {
-        // Validate user exists
-        User user = userRepository.findById(orderRequest.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", orderRequest.getUserId()));
+    public OrderResponse createOrder(OrderRequest orderRequest, String username) {
+        // Get the logged-in user from SecurityContext (passed from controller)
+        User user = userRepository.findByUserAccount(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
         
         // Create order entity from request
         Order order = orderMapper.toEntity(orderRequest, user);

@@ -6,7 +6,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.oceanbutterflyshop.backend.dtos.ApiResponse;
 import com.oceanbutterflyshop.backend.dtos.RoleDTO;
@@ -15,7 +23,7 @@ import com.oceanbutterflyshop.backend.services.RoleService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
 @Tag(name = "Role Management", description = "APIs for managing roles")
 public class RoleController {
@@ -45,6 +53,7 @@ public class RoleController {
 
     @PostMapping
     @Operation(summary = "Create a new role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<RoleDTO>> createRole(@Valid @RequestBody RoleDTO roleDTO) {
         RoleDTO createdRole = roleService.createRole(roleDTO);
         return new ResponseEntity<>(
@@ -55,6 +64,7 @@ public class RoleController {
 
     @PutMapping("/{roleId}")
     @Operation(summary = "Update role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<RoleDTO>> updateRole(
             @PathVariable Integer roleId,
             @Valid @RequestBody RoleDTO roleDTO) {
@@ -64,6 +74,7 @@ public class RoleController {
 
     @DeleteMapping("/{roleId}")
     @Operation(summary = "Delete role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Object>> deleteRole(@PathVariable Integer roleId) {
         roleService.deleteRole(roleId);
         return ResponseEntity.ok(ApiResponse.success("Role deleted successfully", null));

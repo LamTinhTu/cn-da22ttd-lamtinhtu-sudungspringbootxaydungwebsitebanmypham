@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 public class CodeGeneratorUtils {
     
     private static final SecureRandom random = new SecureRandom();
-    private static final int DIGIT_LENGTH = 8;
     private static final int MAX_RANDOM_VALUE = 100000000; // 10^8 for 8 digits max
     
     /**

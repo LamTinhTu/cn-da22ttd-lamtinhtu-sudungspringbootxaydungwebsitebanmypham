@@ -6,7 +6,17 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.oceanbutterflyshop.backend.dtos.ApiResponse;
 import com.oceanbutterflyshop.backend.dtos.request.OrderRequest;
@@ -17,7 +27,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 @Tag(name = "Order Management", description = "APIs for managing orders")
 public class OrderController {
@@ -26,6 +36,7 @@ public class OrderController {
 
     @GetMapping
     @Operation(summary = "Get all orders")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getAllOrders() {
         List<OrderResponse> orders = orderService.getAllOrders();
         return ResponseEntity.ok(ApiResponse.success("Orders retrieved successfully", orders));
@@ -61,8 +72,12 @@ public class OrderController {
 
     @PostMapping
     @Operation(summary = "Create a new order")
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
-        OrderResponse createdOrder = orderService.createOrder(orderRequest);
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+            @Valid @RequestBody OrderRequest orderRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        // Get the logged-in user's username from SecurityContext
+        String username = userDetails.getUsername();
+        OrderResponse createdOrder = orderService.createOrder(orderRequest, username);
         return new ResponseEntity<>(
             ApiResponse.success("Order created successfully", createdOrder),
             HttpStatus.CREATED
@@ -71,6 +86,7 @@ public class OrderController {
 
     @PutMapping("/{orderId}/status")
     @Operation(summary = "Update order status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @PathVariable Integer orderId,
             @RequestParam String status) {
@@ -80,6 +96,7 @@ public class OrderController {
 
     @PutMapping("/{orderId}/payment")
     @Operation(summary = "Update order payment")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> updatePayment(
             @PathVariable Integer orderId,
             @RequestParam String paymentMethod) {

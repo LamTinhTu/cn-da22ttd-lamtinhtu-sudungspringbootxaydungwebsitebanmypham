@@ -2,26 +2,50 @@ package com.oceanbutterflyshop.backend.utils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.oceanbutterflyshop.backend.entities.*;
+import com.oceanbutterflyshop.backend.entities.Brand;
+import com.oceanbutterflyshop.backend.entities.Image;
+import com.oceanbutterflyshop.backend.entities.Order;
+import com.oceanbutterflyshop.backend.entities.OrderItem;
+import com.oceanbutterflyshop.backend.entities.Product;
+import com.oceanbutterflyshop.backend.entities.Role;
+import com.oceanbutterflyshop.backend.entities.User;
 import com.oceanbutterflyshop.backend.enums.Gender;
 import com.oceanbutterflyshop.backend.enums.OrderStatus;
 import com.oceanbutterflyshop.backend.enums.PaymentMethod;
-import com.oceanbutterflyshop.backend.repositories.*;
+import com.oceanbutterflyshop.backend.enums.ProductStatus;
+import com.oceanbutterflyshop.backend.repositories.BrandRepository;
+import com.oceanbutterflyshop.backend.repositories.ImageRepository;
+import com.oceanbutterflyshop.backend.repositories.OrderItemRepository;
+import com.oceanbutterflyshop.backend.repositories.OrderRepository;
+import com.oceanbutterflyshop.backend.repositories.ProductRepository;
+import com.oceanbutterflyshop.backend.repositories.RoleRepository;
+import com.oceanbutterflyshop.backend.repositories.UserRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Data seeder for Cosmetics Store application.
+ * Uses net.datafaker with Vietnamese locale (vi).
+ * Execution order: Role -> User -> Brand -> Product -> Order -> OrderItem.
+ * * Requirements:
+ * - Roles: 3 fixed roles (ADM, STF, CUS)
+ * - Users: 1 Admin, 1 Staff, 5 Customers with BCrypt hashed passwords
+ * - Brands: Famous Cosmetic brands
+ * - Products: 20 cosmetic items (Lipstick, Cream, Serum...)
+ * - Orders: Random orders with snapshot logic for address/phone
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -37,281 +61,337 @@ public class DataSeeder implements CommandLineRunner {
     private final OrderItemRepository orderItemRepository;
     private final CodeGeneratorUtils codeGeneratorUtils;
 
-    private final Faker faker = new Faker(new Locale("vi"));
     private final Random random = new Random();
+    
+    // BCrypt password encoder
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public void run(String... args) throws Exception {
-        log.info("Starting data seeding with Vietnamese locale...");
+        log.info("========================================");
+        log.info("DATA SEEDER: Checking database status...");
+        log.info("========================================");
         
-        // Execute in proper order to satisfy FK constraints
+        long roleCount = roleRepository.count();
+        long userCount = userRepository.count();
+        
+        log.info("Current database state: {} roles, {} users", roleCount, userCount);
+        
         createRoles();
-        createUsers();
+        createAdminAndStaff();
+        createCustomers();
         createBrands();
         createProducts();
         createImages();
         createOrders();
-        
-        log.info("Data seeding completed successfully!");
+
+        log.info("========================================");
+        log.info("DATA SEEDER: Data seeding process completed.");
+        log.info("========================================");
     }
 
-    /**
-     * Step 1: Create Roles (Fixed data)
-     */
+    // Step 1: Create Roles (Giữ nguyên logic)
     private void createRoles() {
-        if (roleRepository.count() == 0) {
-            // Fixed roles as per specification
-            Role adminRole = new Role();
-            adminRole.setRoleCode("AD");
-            adminRole.setRoleName("Administrator");
-            roleRepository.save(adminRole);
+        log.info("Step 1: Creating roles...");
 
-            Role staffRole = new Role();
-            staffRole.setRoleCode("NV");
-            staffRole.setRoleName("Staff");
-            roleRepository.save(staffRole);
-
-            Role customerRole = new Role();
-            customerRole.setRoleCode("KH");
-            customerRole.setRoleName("Customer");
-            roleRepository.save(customerRole);
-
-            log.info("Created 3 roles: Administrator (AD), Staff (NV), Customer (KH)");
+        if(roleRepository.count() > 0) {
+            log.warn("⚠ Roles already exist. Skipping role creation.");
+            return;
         }
+        
+        Role adminRole = new Role();
+        adminRole.setRoleCode("ADM");
+        adminRole.setRoleName("Administrator");
+        roleRepository.save(adminRole);
+
+        Role staffRole = new Role();
+        staffRole.setRoleCode("STF");
+        staffRole.setRoleName("Staff");
+        roleRepository.save(staffRole);
+
+        Role customerRole = new Role();
+        customerRole.setRoleCode("CUS");
+        customerRole.setRoleName("Customer");
+        roleRepository.save(customerRole);
+
+        log.info("✓ Created 3 roles: Administrator (ADM), Staff (STF), Customer (CUS)");
+    }
+
+    // Step 2: Create Admin & Staff (Giữ nguyên logic)
+    private void createAdminAndStaff() {
+        log.info("Step 2: Creating Admin & Staff accounts...");
+        
+        if(userRepository.count() > 0) {
+            log.warn("⚠ Users already exist. Skipping Admin & Staff creation.");
+            return;
+        }
+
+        Role adminRole = roleRepository.findByRoleCode("ADM")
+            .orElseThrow(() -> new RuntimeException("Admin role not found. Ensure Step 1 completed successfully."));
+        Role staffRole = roleRepository.findByRoleCode("STF")
+            .orElseThrow(() -> new RuntimeException("Staff role not found. Ensure Step 1 completed successfully."));
+
+        // Create 1 Admin
+        User admin = createUser(
+            "Nguyễn Văn Quản Trị",
+            Gender.MALE,
+            adminRole,
+            "admin",
+            "password"
+        );
+        userRepository.save(admin);
+        log.info("  ✓ Created Admin: {} (Code: {}, Username: admin)", admin.getUserName(), admin.getUserCode());
+
+        // Create 1 Staff
+        User staff = createUser(
+            "Trần Thị Thu Ngân",
+            Gender.FEMALE,
+            staffRole,
+            "staff",
+            "password"
+        );
+        userRepository.save(staff);
+        log.info("  ✓ Created Staff: {} (Code: {}, Username: staff)", staff.getUserName(), staff.getUserCode());
+
+        log.info("✓ Step 2 complete: Created {} privileged users", userRepository.count());
+    }
+    
+    // Step 3A: Create Customers (Giữ nguyên logic tạo user, đổi tên cho nữ tính hơn một chút vì shop mỹ phẩm)
+    private void createCustomers() {
+        log.info("Step 3: Creating Customer accounts...");
+        
+        if(userRepository.count() > 2) {
+            log.warn("⚠ More than 2 users exist. Skipping Customer creation.");
+            return;
+        }
+
+        Role customerRole = roleRepository.findByRoleCode("CUS")
+            .orElseThrow(() -> new RuntimeException("Customer role not found. Ensure Step 1 completed successfully."));
+
+        String[] customerNames = {
+            "Lê Thị Hồng Hạnh",
+            "Phạm Minh Trang",
+            "Hoàng Văn Thái", // Nam cũng mua mỹ phẩm/quà tặng
+            "Võ Thu Thảo",
+            "Đặng Ngọc Mai"
+        };
+        
+        Gender[] genders = {Gender.FEMALE, Gender.FEMALE, Gender.MALE, Gender.FEMALE, Gender.FEMALE};
+        
+        for (int i = 0; i < 5; i++) {
+            String username = "customer" + (i + 1);
+            User customer = createUser(
+                customerNames[i],
+                genders[i],
+                customerRole,
+                username,
+                "password"
+            );
+            userRepository.save(customer);
+            log.info("  ✓ Created Customer: {} (Username: {})", customer.getUserName(), username);
+        }
+
+        log.info("✓ Step 3A complete: Created 5 customers");
     }
 
     /**
-     * Step 2: Create Users (1 Admin, 1 Staff, 5 Customers)
-     */
-    private void createUsers() {
-        if (userRepository.count() == 0) {
-            Role adminRole = roleRepository.findByRoleCode("AD").orElse(null);
-            Role staffRole = roleRepository.findByRoleCode("NV").orElse(null);
-            Role customerRole = roleRepository.findByRoleCode("KH").orElse(null);
-
-            // Create 1 Admin
-            if (adminRole != null) {
-                User admin = createUser("Admin", Gender.NAM, adminRole, "admin", "admin123");
-                userRepository.save(admin);
-                log.info("Created admin user: {}", admin.getUserName());
-            }
-
-            // Create 1 Staff
-            if (staffRole != null) {
-                User staff = createUser("Test Staff", Gender.NU, staffRole, "staff", "staff123");
-                userRepository.save(staff);
-                log.info("Created staff user: {}", staff.getUserName());
-            }
-
-            // Create 5 Customers
-            if (customerRole != null) {
-                for (int i = 0; i < 5; i++) {
-                    Gender gender = random.nextBoolean() ? Gender.NAM : Gender.NU;
-                    String name = gender == Gender.NAM ? 
-                        faker.name().fullName() : 
-                        faker.name().fullName();
-                    
-                    User customer = createUser(name, gender, customerRole, 
-                        generateUsername(name), "password123");
-                    userRepository.save(customer);
-                    log.info("Created customer: {}", customer.getUserName());
-                }
-            }
-
-            log.info("Created {} users total", userRepository.count());
-        }
-    }
-
-    /**
-     * Step 3: Create Brands (Real watch brands)
-     */
-    /**
-     * Step 3: Create Brands (Thương hiệu Mỹ phẩm)
+     * Step 3B: Create Brands (Cosmetic Brands)
      */
     private void createBrands() {
-        if (brandRepository.count() == 0) {
-            String[] brandNames = {
-                "L'Oréal Paris", "MAC Cosmetics", "Innisfree", "La Roche-Posay", "Laneige", 
-                "Maybelline", "Estée Lauder", "Paula's Choice", "Vichy", "3CE"
-            };
-            
-            String[] descriptions = {
-                "Tập đoàn mỹ phẩm hàng đầu thế giới với các sản phẩm đa dạng từ trang điểm đến chăm sóc da.",
-                "Thương hiệu trang điểm chuyên nghiệp đẳng cấp quốc tế, nổi tiếng với các dòng son thỏi.",
-                "Thương hiệu mỹ phẩm thiên nhiên từ đảo Jeju, Hàn Quốc, thân thiện với môi trường.",
-                "Dược mỹ phẩm Pháp được chuyên gia da liễu khuyên dùng cho da nhạy cảm.",
-                "Thương hiệu cao cấp Hàn Quốc, nổi tiếng với công nghệ cấp nước và dưỡng ẩm chuyên sâu.",
-                "Thương hiệu trang điểm số 1 thế giới, mang phong cách New York trẻ trung và năng động.",
-                "Biểu tượng của sự sang trọng trong thế giới làm đẹp với các sản phẩm chống lão hóa.",
-                "Thương hiệu dược mỹ phẩm chú trọng vào thành phần an toàn và hiệu quả thực tế trên da.",
-                "Dược mỹ phẩm sử dụng nước khoáng núi lửa, giúp củng cố và bảo vệ hàng rào bảo vệ da.",
-                "Thương hiệu trang điểm Hàn Quốc dẫn đầu xu hướng với phong cách trẻ trung, sành điệu."
-            };
+        log.info("Step 3B: Creating brands...");
 
-            for (int i = 0; i < brandNames.length; i++) {
-                Brand brand = new Brand();
-                
-                // Generate unique brand code
-                String brandCode;
-                do {
-                    brandCode = codeGeneratorUtils.generateCode("TH");
-                } while (brandRepository.existsByBrandCode(brandCode));
-                
-                brand.setBrandCode(brandCode);
-                brand.setBrandName(brandNames[i]);
-                brand.setBrandDescription(descriptions[i]);
-                
-                brandRepository.save(brand);
-                log.info("Created brand: {} with code {}", brand.getBrandName(), brand.getBrandCode());
-            }
-
-            log.info("Created {} brands", brandRepository.count());
+        if(brandRepository.count() > 0) {
+            log.warn("⚠ Brands already exist. Skipping brand creation.");
+            return;
         }
+        
+        // Dữ liệu Brand Mỹ Phẩm
+        String[][] brandData = {
+            {"L'Oréal", "Tập đoàn mỹ phẩm hàng đầu thế giới từ Pháp với đa dạng sản phẩm"},
+            {"MAC", "Thương hiệu trang điểm chuyên nghiệp đẳng cấp quốc tế"},
+            {"Innisfree", "Mỹ phẩm thiên nhiên đến từ đảo Jeju, Hàn Quốc"},
+            {"Laneige", "Thương hiệu dưỡng da cao cấp tập trung vào độ ẩm và sự rạng rỡ"},
+            {"Maybelline", "Thương hiệu trang điểm số 1 tại Mỹ, trẻ trung và phong cách"},
+            {"Estée Lauder", "Biểu tượng của sự sang trọng và công nghệ dưỡng da tiên tiến"},
+            {"La Roche-Posay", "Dược mỹ phẩm Pháp chuyên sâu cho da nhạy cảm"},
+            {"Vichy", "Thương hiệu dược mỹ phẩm sử dụng nước khoáng núi lửa"},
+            {"Shiseido", "Sự kết hợp giữa khoa học phương Tây và bí quyết làm đẹp phương Đông"},
+            {"Kiehl's", "Mỹ phẩm dưỡng da tự nhiên có nguồn gốc từ hiệu thuốc cũ ở New York"}
+        };
+
+        for (String[] data : brandData) {
+            Brand brand = new Brand();
+            
+            String brandCode = generateUniqueCode("TH", code -> 
+                brandRepository.findByBrandCode(code).isPresent()
+            );
+            
+            brand.setBrandCode(brandCode);
+            brand.setBrandName(data[0]);
+            brand.setBrandDescription(data[1]);
+            
+            brandRepository.save(brand);
+        }
+
+        log.info("✓ Step 3B complete: Created {} brands", brandRepository.count());
     }
 
     /**
-     * Step 4: Create Products (Mỹ phẩm)
+     * Step 4: Create Products (Cosmetic Items)
      */
     private void createProducts() {
-        if (productRepository.count() == 0) {
-            List<Brand> brands = brandRepository.findAll();
-            
-            // Các loại mỹ phẩm phổ biến
-            String[] productTypes = {
-                "Lipstick", "Foundation", "Serum", "Toner", "Sunscreen", 
-                "Moisturizer", "Mascara", "Cleanser", "Face Mask", "Cushion"
-            };
+        log.info("Step 4: Creating products...");
 
-            // Các tính năng/đặc điểm để ghép vào tên cho phong phú
-            String[] features = {
-                "Matte", "Glow", "Hydrating", "Oil-Free", "Long-lasting", 
-                "Whitening", "Anti-aging", "Sensitive", "Natural", "Waterproof"
-            };
-
-            for (int i = 0; i < 20; i++) {
-                Product product = new Product();
-                
-                String productCode;
-                do {
-                    productCode = codeGeneratorUtils.generateCode("SP");
-                } while (productRepository.existsByProductCode(productCode));
-                
-                Brand randomBrand = brands.get(random.nextInt(brands.size()));
-                String productType = productTypes[random.nextInt(productTypes.length)];
-                String feature = features[random.nextInt(features.length)];
-                
-                // Tên sản phẩm: [Brand] [Type] [Feature] (VD: MAC Lipstick Matte)
-                product.setProductCode(productCode);
-                product.setProductName(randomBrand.getBrandName() + " " + productType + " " + feature);
-                
-                product.setProductDescription(
-                    String.format("Sản phẩm %s dòng %s của %s giúp mang lại vẻ đẹp tự nhiên và rạng rỡ. " +
-                        "Công thức %s độc đáo, an toàn cho da và độ bám màu vượt trội suốt cả ngày.", 
-                        productType, feature, randomBrand.getBrandName(), feature)
-                );
-                
-                // Giá mỹ phẩm (Giả lập từ 150.000 đến 2.000.000)
-                // Lưu ý: Nếu bạn có hàm generateRealisticPrice riêng thì cần sửa lại hàm đó, 
-                // hoặc dùng logic random đơn giản dưới đây:
-                
-                // Làm tròn về hàng nghìn
-                BigDecimal finalPrice = this.generateRealisticPrice(randomBrand.getBrandName());
-                product.setProductPrice(finalPrice);
-                
-                product.setQuantityStock(ThreadLocalRandom.current().nextInt(10, 100)); // Mỹ phẩm thường nhập nhiều hơn đồng hồ
-                product.setBrand(randomBrand);
-                
-                productRepository.save(product);
-                log.info("Created product: {} - Price: {}", product.getProductName(), product.getProductPrice());
-            }
-
-            log.info("Created {} products", productRepository.count());
+        if(productRepository.count() > 0) {
+            log.warn("⚠ Products already exist. Skipping product creation.");
+            return;
         }
-    }
-
-    /**
-     * Step 5: Create Images (URL)
-     */
-    private void createImages() {
-        if (imageRepository.count() == 0) {
-            List<Product> products = productRepository.findAll();
-            
-            for (Product product : products) {
-                int imageCount = ThreadLocalRandom.current().nextInt(1, 4);
-                
-                for (int i = 0; i < imageCount; i++) {
-                    Image image = new Image();
-                    image.setImageName(product.getProductCode() + "_cosmetic_" + (i + 1) + ".jpg");
-                    // Đổi đường dẫn URL cho hợp ngữ cảnh
-                    image.setImageURL("https://example.com/images/cosmetics/" + product.getProductCode() + "_" + (i + 1) + ".jpg");
-                    image.setProduct(product);
-                    
-                    imageRepository.save(image);
-                }
-            }
-
-            log.info("Created {} product images", imageRepository.count());
-        }
-    }
-
-    /**
-     * Step 6: Create Orders with snapshot logic
-     */
-    private void createOrders() {
-        if (orderRepository.count() == 0) {
-            List<User> customers = userRepository.findByRoleRoleCode("KH");
-            List<Product> products = productRepository.findAll();
-            
-            // Create 10-15 random orders
-            int orderCount = ThreadLocalRandom.current().nextInt(10, 16);
-            
-            for (int i = 0; i < orderCount; i++) {
-                User customer = customers.get(random.nextInt(customers.size()));
-                
-                Order order = new Order();
-                
-                // Generate unique order code
-                String orderCode;
-                do {
-                    orderCode = codeGeneratorUtils.generateCode("DH");
-                } while (orderRepository.existsByOrderCode(orderCode));
-                
-                order.setOrderCode(orderCode);
-                order.setUser(customer);
-                order.setOrderDate(generateRandomDate());
-                order.setOrderStatus(getRandomOrderStatus());
-                
-                // SNAPSHOT LOGIC: Copy user's current address/phone to order
-                order.setShippingAddress(customer.getUserAddress());
-                order.setShippingPhone(customer.getUserPhone());
-                
-                order.setPaymentMethod(getRandomPaymentMethod());
-                
-                if (order.getOrderStatus() != OrderStatus.NEW) {
-                    order.setPaymentDate(order.getOrderDate().plusDays(ThreadLocalRandom.current().nextInt(1, 8)));
-                }
-                
-                orderRepository.save(order);
-                
-                // Create order items
-                createOrderItems(order, products);
-                
-                log.info("Created order: {} for customer: {} - Status: {}", 
-                    order.getOrderCode(), customer.getUserName(), order.getOrderStatus());
-            }
-
-            log.info("Created {} orders with order items", orderRepository.count());
-        }
-    }
-
-    /**
-     * Helper method to create order items for an order
-     */
-    private void createOrderItems(Order order, List<Product> products) {
-        BigDecimal totalAmount = BigDecimal.ZERO;
         
-        // Each order has 1-4 different products
-        int itemTypeCount = ThreadLocalRandom.current().nextInt(1, 5);
+        List<Brand> brands = brandRepository.findAll();
+        
+        if (brands.isEmpty()) {
+            throw new RuntimeException("No brands found. Ensure Step 3B completed successfully.");
+        }
+        
+        // Loại sản phẩm mỹ phẩm
+        String[] productTypes = {
+            "Son lì Matte", "Son dưỡng môi", "Kem nền Foundation", "Phấn nước Cushion", 
+            "Mascara chống nước", "Kẻ mắt Eyeliner", "Kem dưỡng ẩm", "Serum Vitamin C", 
+            "Toner cân bằng da", "Sữa rửa mặt", "Kem chống nắng", "Mặt nạ ngủ",
+            "Tẩy trang Micellar", "Kem mắt Anti-aging", "Phấn má hồng"
+        };
+        
+        // Tính từ mô tả
+        String[] adjectives = {"Cao cấp", "Dưỡng trắng", "Phục hồi da", "Kiềm dầu", "Cấp ẩm sâu", "Tự nhiên"};
+
+        for (int i = 0; i < 20; i++) {
+            Product product = new Product();
+            
+            String productCode = generateUniqueCode("SP", code -> 
+                productRepository.findByProductCode(code).isPresent()
+            );
+            
+            Brand randomBrand = brands.get(random.nextInt(brands.size()));
+            String productType = productTypes[random.nextInt(productTypes.length)];
+            String adjective = adjectives[random.nextInt(adjectives.length)];
+            
+            product.setProductCode(productCode);
+            product.setProductName(randomBrand.getBrandName() + " " + productType + " " + adjective);
+            
+            product.setProductDescription(
+                String.format("Sản phẩm %s thuộc dòng %s của thương hiệu %s. " +
+                    "Công thức %s giúp mang lại vẻ đẹp tự nhiên và nuôi dưỡng làn da khỏe mạnh từ bên trong.", 
+                    productType, adjective, randomBrand.getBrandName(), adjective.toLowerCase())
+            );
+            
+            // Generate realistic prices based on brand positioning
+            BigDecimal basePrice = generateRealisticPrice(randomBrand.getBrandName());
+            product.setProductPrice(basePrice);
+            
+            product.setQuantityStock(ThreadLocalRandom.current().nextInt(10, 100));
+            
+            // Set ProductStatus
+            int statusRoll = random.nextInt(100);
+            if (statusRoll < 80) { // 80% Selling
+                product.setProductStatus(ProductStatus.SELLING);
+            } else if (statusRoll < 95) { // 15% Not Sold (New arrival/Coming soon)
+                product.setProductStatus(ProductStatus.NOT_SOLD);
+            } else { // 5% Out of Stock
+                product.setProductStatus(ProductStatus.OUT_OF_STOCK);
+            }
+            
+            product.setBrand(randomBrand);
+            
+            productRepository.save(product);
+        }
+
+        log.info("✓ Step 4 complete: Created {} cosmetic products", productRepository.count());
+    }
+
+    // Step 4B: Create Images (Đổi URL)
+    private void createImages() {
+        log.info("Step 4B: Creating product images...");
+
+        if(imageRepository.count() > 0) {
+            log.warn("⚠ Images already exist. Skipping image creation.");
+            return;
+        }
+        
+        List<Product> products = productRepository.findAll();
+        
+        int totalImages = 0;
+        
+        for (Product product : products) {
+            int imageCount = ThreadLocalRandom.current().nextInt(1, 3);
+            
+            for (int i = 0; i < imageCount; i++) {
+                Image image = new Image();
+                // Đổi naming convention file ảnh
+                image.setImageName(product.getProductCode() + "_beauty_" + (i + 1) + ".jpg");
+                // Đổi domain giả lập sang cosmetics
+                image.setImageURL("https://images.oceanbutterfly.com/cosmetics/" + 
+                    product.getProductCode() + "_" + (i + 1) + ".jpg");
+                image.setProduct(product);
+                
+                imageRepository.save(image);
+                totalImages++;
+            }
+        }
+
+        log.info("✓ Step 4B complete: Created {} product images", totalImages);
+    }
+
+    // Step 5: Create Orders (Logic giữ nguyên)
+    private void createOrders() {
+        log.info("Step 5: Creating orders with order items...");
+
+        if(orderRepository.count() > 0) {
+            log.warn("⚠ Orders already exist. Skipping order creation.");
+            return;
+        }
+        
+        List<User> customers = userRepository.findByRole_RoleCode("CUS");
+        List<Product> products = productRepository.findAll();
+        
+        if (customers.isEmpty() || products.isEmpty()) return;
+        
+        int orderCount = ThreadLocalRandom.current().nextInt(10, 16);
+        
+        for (int i = 0; i < orderCount; i++) {
+            User customer = customers.get(random.nextInt(customers.size()));
+            
+            Order order = new Order();
+            String orderCode = generateUniqueCode("DH", code -> 
+                orderRepository.findByOrderCode(code).isPresent()
+            );
+            
+            order.setOrderCode(orderCode);
+            order.setUser(customer);
+            order.setOrderDate(generateRandomDate());
+            order.setOrderStatus(getRandomOrderStatus());
+            
+            order.setShippingAddress(customer.getUserAddress());
+            order.setShippingPhone(customer.getUserPhone());
+            order.setPaymentMethod(getRandomPaymentMethod());
+            
+            if (order.getOrderStatus() != OrderStatus.NEW) {
+                order.setPaymentDate(order.getOrderDate().plusDays(1));
+            }
+            
+            order.setOrderAmount(BigDecimal.ZERO);
+            orderRepository.save(order);
+            
+            BigDecimal totalAmount = createOrderItems(order, products);
+            order.setOrderAmount(totalAmount);
+            orderRepository.save(order);
+        }
+
+        log.info("✓ Step 5 complete: Created {} orders", orderRepository.count());
+    }
+
+    private BigDecimal createOrderItems(Order order, List<Product> products) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        int itemTypeCount = ThreadLocalRandom.current().nextInt(1, 6); // Mua mỹ phẩm thường mua nhiều món hơn
         List<Product> selectedProducts = new ArrayList<>();
         
         for (int i = 0; i < itemTypeCount; i++) {
@@ -325,35 +405,28 @@ public class DataSeeder implements CommandLineRunner {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             
-            int quantity = ThreadLocalRandom.current().nextInt(1, 4); // 1-3 items
+            int quantity = ThreadLocalRandom.current().nextInt(1, 3);
             orderItem.setItemQuantity(quantity);
-            
-            // Use current product price as item price (snapshot)
             orderItem.setItemPrice(product.getProductPrice());
-            orderItem.setUnitPrice(product.getProductPrice().doubleValue()); // Legacy field
+            orderItem.setUnitPrice(product.getProductPrice().doubleValue());
             
             orderItemRepository.save(orderItem);
             
-            // Calculate total
-            totalAmount = totalAmount.add(product.getProductPrice().multiply(BigDecimal.valueOf(quantity)));
+            totalAmount = totalAmount.add(
+                product.getProductPrice().multiply(BigDecimal.valueOf(quantity))
+            );
         }
         
-        // Update order total amount
-        order.setOrderAmount(totalAmount);
-        orderRepository.save(order);
+        return totalAmount;
     }
 
-    /**
-     * Helper methods
-     */
-    private User createUser(String name, Gender gender, Role role, String account, String password) {
+    // Helper: Create User (Giữ nguyên)
+    private User createUser(String name, Gender gender, Role role, String account, String plainPassword) {
         User user = new User();
-        
-        // Generate unique user code based on role
-        String userCode;
-        do {
-            userCode = codeGeneratorUtils.generateCode(role.getRoleCode());
-        } while (userRepository.existsByUserCode(userCode));
+        String prefix = getUserCodePrefix(role.getRoleCode());
+        String userCode = generateUniqueCode(prefix, code -> 
+            userRepository.findByUserCode(code).isPresent()
+        );
         
         user.setUserCode(userCode);
         user.setUserName(name);
@@ -362,27 +435,64 @@ public class DataSeeder implements CommandLineRunner {
         user.setUserAddress(generateVietnameseAddress());
         user.setUserPhone(generateVietnamesePhone());
         user.setUserAccount(account);
-        user.setUserPassword(password); // In production, should be hashed
+        user.setUserPassword(passwordEncoder.encode(plainPassword));
         user.setRole(role);
         
         return user;
     }
 
-    private String generateUsername(String fullName) {
-        return fullName.toLowerCase()
-            .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
-            .replaceAll("[èéẹẻẽêềếệểễ]", "e")
-            .replaceAll("[ìíịỉĩ]", "i")
-            .replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o")
-            .replaceAll("[ùúụủũưừứựửữ]", "u")
-            .replaceAll("[ỳýỵỷỹ]", "y")
-            .replaceAll("[đ]", "d")
-            .replaceAll("\\s+", "")
-            .replaceAll("[^a-zA-Z0-9]", "");
+    private String getUserCodePrefix(String roleCode) {
+        switch (roleCode) {
+            case "ADM": return "AD";
+            case "STF": return "NV";
+            case "CUS": return "KH";
+            default: throw new RuntimeException("Unknown role code: " + roleCode);
+        }
+    }
+
+    private String generateUniqueCode(String prefix, java.util.function.Predicate<String> existsChecker) {
+        String code;
+        int attempts = 0;
+        do {
+            code = codeGeneratorUtils.generateCode(prefix);
+            attempts++;
+            if (attempts > 100) throw new RuntimeException("Failed to generate unique code");
+        } while (existsChecker.test(code));
+        return code;
+    }
+
+    /**
+     * Helper: Generate realistic price based on Cosmetic Brand Tier
+     */
+    private BigDecimal generateRealisticPrice(String brandName) {
+        BigDecimal basePrice;
+        
+        switch (brandName) {
+            case "Estée Lauder":
+            case "Shiseido":
+            case "Kiehl's":
+                // High-end: 1M - 4M VND
+                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(1000000, 4000001));
+                break;
+            case "MAC":
+            case "Laneige":
+            case "La Roche-Posay":
+            case "Vichy":
+                // Mid-range: 400k - 1.2M VND
+                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(400000, 1200001));
+                break;
+            default: // Maybelline, L'Oréal, Innisfree
+                // Mass market: 150k - 500k VND
+                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(150000, 500001));
+        }
+        
+        // Làm tròn đến hàng nghìn (1000)
+        return basePrice.divide(BigDecimal.valueOf(1000), 0, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(1000));
     }
 
     private LocalDate generateRandomBirthDate() {
-        int year = ThreadLocalRandom.current().nextInt(1970, 2000);
+        int year = ThreadLocalRandom.current().nextInt(1985, 2004); // Khách hàng trẻ hơn chút (1985-2003)
         int month = ThreadLocalRandom.current().nextInt(1, 13);
         int day = ThreadLocalRandom.current().nextInt(1, 29);
         return LocalDate.of(year, month, day);
@@ -390,68 +500,41 @@ public class DataSeeder implements CommandLineRunner {
 
     private String generateVietnameseAddress() {
         String[] streets = {
-            "Lê Lợi", "Nguyễn Huệ", "Đồng Khởi", "Hai Bà Trưng", "Trần Hưng Đạo",
-            "Lý Tự Trọng", "Nam Kỳ Khởi Nghĩa", "Võ Văn Tần", "Cách Mạng Tháng 8"
+            "Nguyễn Trãi", "Cầu Giấy", "Xuân Thủy", "Kim Mã", "Phố Huế", // Thêm phố Hà Nội cho đa dạng
+            "Lê Lợi", "Nguyễn Huệ", "Đồng Khởi", "Hai Bà Trưng", "Cách Mạng Tháng 8"
         };
-        String[] districts = {
-            "Quận 1", "Quận 3", "Quận 5", "Quận 7", "Quận Bình Thạnh", "Quận Phú Nhuận"
-        };
+        String[] districts = {"Quận 1", "Quận 3", "Quận Cầu Giấy", "Quận Hoàn Kiếm", "Quận Ba Đình", "Quận 7"};
         
-        int number = ThreadLocalRandom.current().nextInt(1, 500);
+        int number = ThreadLocalRandom.current().nextInt(1, 200);
         String street = streets[random.nextInt(streets.length)];
         String district = districts[random.nextInt(districts.length)];
         
-        return String.format("%d Đường %s, %s, TP.HCM", number, street, district);
+        return String.format("%d %s, %s, Việt Nam", number, street, district);
     }
 
     private String generateVietnamesePhone() {
-        String[] prefixes = {"090", "091", "092", "093", "094", "095", "096", "097", "098", "099",
-                           "032", "033", "034", "035", "036", "037", "038", "039"};
+        String[] prefixes = {"090", "091", "093", "094", "096", "097", "098", "032", "033", "070", "079"};
         String prefix = prefixes[random.nextInt(prefixes.length)];
-        String suffix = String.format("%07d", ThreadLocalRandom.current().nextInt(0, 9999999));
+        String suffix = String.format("%07d", ThreadLocalRandom.current().nextInt(0, 10000000));
         return prefix + suffix;
     }
 
     private LocalDate generateRandomDate() {
-        return LocalDate.now().minusDays(ThreadLocalRandom.current().nextInt(0, 90));
+        return LocalDate.now().minusDays(ThreadLocalRandom.current().nextInt(0, 60));
     }
 
     private OrderStatus getRandomOrderStatus() {
-        OrderStatus[] statuses = OrderStatus.values();
-        return statuses[random.nextInt(statuses.length)];
+        int roll = random.nextInt(100);
+        if (roll < 20) return OrderStatus.NEW;
+        if (roll < 40) return OrderStatus.PROCESSING;
+        if (roll < 90) return OrderStatus.DELIVERED;
+        return OrderStatus.CANCELLED;
     }
 
     private PaymentMethod getRandomPaymentMethod() {
-        PaymentMethod[] methods = PaymentMethod.values();
-        return methods[random.nextInt(methods.length)];
-    }
-
-    private BigDecimal generateRealisticPrice(String brandName) {
-        BigDecimal basePrice;
-        
-        // Set realistic price ranges based on brand prestige
-        switch (brandName.toLowerCase()) {
-            case "rolex":
-            case "omega":
-                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(15000, 50000));
-                break;
-            case "tag heuer":
-            case "tissot":
-                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(5000, 15000));
-                break;
-            case "seiko":
-            case "citizen":
-                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(1000, 5000));
-                break;
-            case "casio":
-            case "timex":
-                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(200, 1000));
-                break;
-            default:
-                basePrice = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(500, 3000));
-        }
-        
-        // Round to 2 decimal places
-        return basePrice.setScale(2, RoundingMode.HALF_UP);
+        int roll = random.nextInt(100);
+        if (roll < 30) return PaymentMethod.CASH; // Mua mỹ phẩm hay COD
+        if (roll < 70) return PaymentMethod.BANK_TRANSFER;
+        return PaymentMethod.CARD;
     }
 }

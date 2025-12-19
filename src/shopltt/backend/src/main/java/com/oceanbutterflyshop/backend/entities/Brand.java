@@ -3,6 +3,7 @@ package com.oceanbutterflyshop.backend.entities;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,9 +22,14 @@ public class Brand {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer brandId;
+    
+    @Column(name = "brand_code", unique = true, nullable = false, length = 10)
     private String brandCode;
+    
+    @Column(name = "brand_name", nullable = false)
     private String brandName;
-    @Column(columnDefinition = "TEXT")
+    
+    @Column(name = "brand_description", columnDefinition = "TEXT")
     private String brandDescription;
     
     @CreationTimestamp
@@ -33,6 +39,7 @@ public class Brand {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "brand")
     private List<Product> products;
 }

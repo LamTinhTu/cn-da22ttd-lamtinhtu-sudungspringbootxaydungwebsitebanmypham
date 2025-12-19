@@ -1,7 +1,11 @@
 package com.oceanbutterflyshop.backend.dtos.request;
 
 import lombok.Data;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 
@@ -16,8 +20,8 @@ public class UserRequest {
     private String userName;
     
     @NotBlank(message = "Gender is required")
-    @Pattern(regexp = "^(Nam|Nu|Khac)$", message = "Gender must be: Nam, Nu, or Khac")
-    @Schema(description = "User gender", example = "Nam", allowableValues = {"Nam", "Nu", "Khac"})
+    @Pattern(regexp = "^(Male|Female|Other)$", message = "Gender must be: Male, Female, or Other")
+    @Schema(description = "User gender", example = "Male", allowableValues = {"Male", "Female", "Other"})
     private String userGender;
     
     @Past(message = "Birth date must be in the past")

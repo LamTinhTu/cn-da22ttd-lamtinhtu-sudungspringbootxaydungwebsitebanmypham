@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.oceanbutterflyshop.backend.dtos.request.ProductRequest;
+import com.oceanbutterflyshop.backend.dtos.request.ProductRequestDTO;
 import com.oceanbutterflyshop.backend.dtos.response.ProductResponse;
 import com.oceanbutterflyshop.backend.entities.Brand;
 import com.oceanbutterflyshop.backend.entities.Product;
@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse createProduct(ProductRequest productRequest) {
+    public ProductResponse createProduct(ProductRequestDTO productRequest) {
         // Validate brand exists
         Brand brand = brandRepository.findById(productRequest.getBrandId())
                 .orElseThrow(() -> new ResourceNotFoundException("Brand", "id", productRequest.getBrandId()));
@@ -67,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse updateProduct(Integer productId, ProductRequest productRequest) {
+    public ProductResponse updateProduct(Integer productId, ProductRequestDTO productRequest) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
         

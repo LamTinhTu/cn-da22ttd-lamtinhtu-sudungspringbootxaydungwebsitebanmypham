@@ -1,10 +1,10 @@
 package com.oceanbutterflyshop.backend.enums;
 
 public enum OrderStatus {
-    NEW("New"),
-    PROCESSING("Processing"),
-    DELIVERED("Delivered"),
-    CANCELLED("Cancelled");
+    NEW("Đã đặt"),
+    PROCESSING("Đang xử lý"),
+    DELIVERED("Đã giao"),
+    CANCELLED("Đã hủy");
 
     private final String displayName;
 

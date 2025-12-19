@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.oceanbutterflyshop.backend.dtos.request.BrandRequest;
@@ -16,17 +15,15 @@ import com.oceanbutterflyshop.backend.repositories.BrandRepository;
 import com.oceanbutterflyshop.backend.services.BrandService;
 import com.oceanbutterflyshop.backend.utils.CodeGeneratorUtils;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class BrandServiceImpl implements BrandService {
 
-    @Autowired
-    private BrandRepository brandRepository;
-
-    @Autowired
-    private BrandMapper brandMapper;
-    
-    @Autowired
-    private CodeGeneratorUtils codeGeneratorUtils;
+    private final BrandRepository brandRepository;
+    private final BrandMapper brandMapper;
+    private final CodeGeneratorUtils codeGeneratorUtils;
 
     @Override
     public List<BrandResponse> getAllBrands() {

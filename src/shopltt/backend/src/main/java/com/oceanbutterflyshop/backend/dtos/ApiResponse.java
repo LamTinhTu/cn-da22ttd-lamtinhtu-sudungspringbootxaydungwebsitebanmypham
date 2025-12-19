@@ -3,9 +3,16 @@ package com.oceanbutterflyshop.backend.dtos;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+/**
+ * Standard API Response wrapper
+ * As per PROJECT_SPEC.md Section 5.1
+ * Format: {"status": 200, "message": "Success", "data": {...}}
+ */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)

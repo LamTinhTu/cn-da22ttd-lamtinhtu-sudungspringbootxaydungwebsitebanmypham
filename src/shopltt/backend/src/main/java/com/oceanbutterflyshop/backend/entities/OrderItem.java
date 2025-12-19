@@ -21,11 +21,14 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer orderItemId;
+    
+    @Column(name = "item_quantity", nullable = false)
     private Integer itemQuantity;
     
-    @Column(precision = 15, scale = 2)
+    @Column(name = "item_price", precision = 15, scale = 2, nullable = false)
     private BigDecimal itemPrice;
     
+    @Column(name = "unit_price", nullable = false)
     private Double unitPrice;
     
     @CreationTimestamp

@@ -1,7 +1,11 @@
 package com.oceanbutterflyshop.backend.dtos.request;
 
 import lombok.Data;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,9 +15,7 @@ import java.util.List;
 @Schema(description = "Request DTO for creating or updating an order")
 public class OrderRequest {
     
-    @NotNull(message = "User ID is required")
-    @Schema(description = "Customer user identifier", example = "1")
-    private Integer userId;
+    // NOTE: userId is no longer required - it will be retrieved from SecurityContext
     
     @NotBlank(message = "Order status is required")
     @Pattern(regexp = "^(New|Processing|Delivered|Cancelled)$", 

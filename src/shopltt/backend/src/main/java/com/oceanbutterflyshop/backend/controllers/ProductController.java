@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,39 +15,57 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oceanbutterflyshop.backend.dtos.ApiResponse;
-import com.oceanbutterflyshop.backend.dtos.request.ProductRequest;
+import com.oceanbutterflyshop.backend.dtos.request.ProductRequestDTO;
 import com.oceanbutterflyshop.backend.dtos.response.ProductResponse;
 import com.oceanbutterflyshop.backend.services.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
-@Tag(name = "Product Management", description = "APIs for managing products")
+@Tag(name = "2. Product Management", description = "CRUD operations for watch products. GET endpoints are public, Create/Update/Delete require ADMIN or STAFF role.")
 public class ProductController {
     private final ProductService productService;
 
-    @Operation(summary = "Get all products")
+    @Operation(summary = "Get all products", description = "Retrieve all products with brand information and images. Public endpoint.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Products retrieved successfully")
+    })
+    @SecurityRequirement(name = "")  // Public endpoint
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts(){
         List<ProductResponse> products = productService.getAllProducts();
         return ResponseEntity.ok(ApiResponse.success("Products retrieved successfully", products));
     }
 
-    @Operation(summary = "Get product by ID")
+    @Operation(summary = "Get product by ID", description = "Retrieve a single product by its ID. Public endpoint.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Product retrieved successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    @SecurityRequirement(name = "")  // Public endpoint
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Integer productId){
         ProductResponse product = productService.getProductById(productId);
         return ResponseEntity.ok(ApiResponse.success("Product retrieved successfully", product));
     }
 
-    @Operation(summary = "Create a new product")
+    @Operation(summary = "Create a new product", description = "Create a new watch product with auto-generated code (SP prefix). Requires ADMIN or STAFF role.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Product created successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - JWT token missing or invalid"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Requires ADMIN or STAFF role")
+    })
     @PostMapping
-    public ResponseEntity<ApiResponse<ProductResponse>> createProduct(@Valid @RequestBody ProductRequest productRequest){
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<ApiResponse<ProductResponse>> createProduct(@Valid @RequestBody ProductRequestDTO productRequest){
         ProductResponse createdProduct = productService.createProduct(productRequest);
         return new ResponseEntity<>(
             ApiResponse.success("Product created successfully", createdProduct),
@@ -54,17 +73,32 @@ public class ProductController {
         );
     }
 
-    @Operation(summary = "Update product")
+    @Operation(summary = "Update product", description = "Update an existing product. Requires ADMIN or STAFF role.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Product updated successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Requires ADMIN or STAFF role"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @PutMapping("/{productId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Integer productId,
-            @Valid @RequestBody ProductRequest productRequest){
+            @Valid @RequestBody ProductRequestDTO productRequest){
         ProductResponse updatedProduct = productService.updateProduct(productId, productRequest);
         return ResponseEntity.ok(ApiResponse.success("Product updated successfully", updatedProduct));
     }
 
-    @Operation(summary = "Delete product")
+    @Operation(summary = "Delete product", description = "Delete a product (soft delete). Requires ADMIN or STAFF role.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Product deleted successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Requires ADMIN or STAFF role"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @DeleteMapping("/{productId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<Object>> deleteProduct(@PathVariable Integer productId){
         productService.deleteProduct(productId);
         return ResponseEntity.ok(ApiResponse.success("Product deleted successfully", null));
