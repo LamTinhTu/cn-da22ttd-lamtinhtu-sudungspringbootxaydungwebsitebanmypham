@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Token Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .error { background: #ffebee; color: #c62828; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .warning { background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        button.danger { background: #f44336; }
+        button.danger:hover { background: #da190b; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 200px;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Kiểm tra Token & Đăng nhập</h1>
+    
+    <div class="card">
+        <h2>Trạng thái hiện tại</h2>
+        <div id="tokenStatus"></div>
+    </div>
+
+    <div class="card">
+        <h2>Đăng nhập nhanh</h2>
+        <p>Sử dụng form này để đăng nhập và lấy token mới:</p>
+        
+        <label><strong>Username:</strong></label>
+        <input type="text" id="username" value="staff" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <label><strong>Password:</strong></label>
+        <input type="password" id="password" value="password" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <button onclick="quickLogin()">🔑 Đăng nhập</button>
+        <button class="danger" onclick="clearToken()">🗑️ Xóa Token</button>
+    </div>
+
+    <div class="card">
+        <h2>Test Dashboard API</h2>
+        <button onclick="testDashboard()">📊 Test Dashboard Stats</button>
+        <div id="apiResult"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+
+        function checkTokenStatus() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            
+            let html = '';
+            
+            if (!token) {
+                html = `<div class="error">
+                    <strong>❌ Chưa có token!</strong><br>
+                    Bạn chưa đăng nhập hoặc token đã bị xóa.<br><br>
+                    👉 Sử dụng form bên dưới để đăng nhập.
+                </div>`;
+            } else {
+                try {
+                    // Decode JWT (simple base64 decode)
+                    const parts = token.split('.');
+                    const payload = JSON.parse(atob(parts[1]));
+                    const exp = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const isExpired = exp < now;
+                    
+                    html = `<div class="${isExpired ? 'error' : 'success'}">
+                        <strong>${isExpired ? '❌' : '✅'} Token ${isExpired ? 'ĐÃ HẾT HẠN' : 'còn hạn'}</strong><br>
+                        Hết hạn: ${exp.toLocaleString('vi-VN')}<br>
+                        Còn lại: ${isExpired ? 'Đã hết' : Math.round((exp - now) / 1000 / 60) + ' phút'}
+                    </div>`;
+                    
+                    if (user) {
+                        const userObj = JSON.parse(user);
+                        html += `<div class="success">
+                            <strong>👤 User Info:</strong><br>
+                            Tên: ${userObj.userName || 'N/A'}<br>
+                            Role: ${userObj.roleName || 'N/A'}<br>
+                            Account: ${userObj.userAccount || 'N/A'}
+                        </div>`;
+                    }
+                    
+                    html += `<pre>Token: ${token.substring(0, 50)}...</pre>`;
+                    
+                    if (isExpired) {
+                        html += `<div class="warning">
+                            <strong>⚠️ Token đã hết hạn!</strong><br>
+                            Hãy đăng nhập lại để lấy token mới.
+                        </div>`;
+                    }
+                } catch (e) {
+                    html = `<div class="error">
+                        <strong>❌ Token không hợp lệ!</strong><br>
+                        Không thể decode token: ${e.message}
+                    </div>`;
+                }
+            }
+            
+            document.getElementById('tokenStatus').innerHTML = html;
+        }
+
+        async function quickLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('Vui lòng nhập username và password!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userAccount: username,
+                        userPassword: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
+                }
+                
+                if (data.success && data.data) {
+                    const { accessToken, ...userInfo } = data.data;
+                    localStorage.setItem('authToken', accessToken);
+                    localStorage.setItem('user', JSON.stringify(userInfo));
+                    
+                    alert('✅ Đăng nhập thành công!\nToken đã được lưu vào localStorage.');
+                    checkTokenStatus();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                alert('❌ Đăng nhập thất bại!\n' + error.message);
+            }
+        }
+
+        function clearToken() {
+            if (confirm('Bạn có chắc muốn xóa token?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                alert('Token đã được xóa!');
+                checkTokenStatus();
+            }
+        }
+
+        async function testDashboard() {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                document.getElementById('apiResult').innerHTML = 
+                    '<div class="error">Chưa có token! Hãy đăng nhập trước.</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${data.message || response.statusText}`);
+                }
+                
+                document.getElementById('apiResult').innerHTML = `
+                    <div class="success">
+                        <strong>✅ API hoạt động thành công!</strong>
+                    </div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('apiResult').innerHTML = `
+                    <div class="error">
+                        <strong>❌ API thất bại!</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Check on load
+        window.onload = checkTokenStatus;
+    </script>
+</body>
+</html>

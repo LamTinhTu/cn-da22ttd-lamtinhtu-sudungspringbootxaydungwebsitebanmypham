@@ -1,0 +1,275 @@
+{
+  "pages":{
+        "shop":{
+            "sections":[
+                {
+                    "title":"Sản Phẩm Cho Da Dầu",
+                    "data":[
+                        {
+                            "title":"Sữa rửa mặt",
+                            "description":"Khám phá ngay",
+                            "image":"./images/face_wash_oily_skin.jpg"   
+                        },
+                        {
+                            "title":"Toners",
+                            "description":"Khám phá ngay",
+                            "image":"./images/toners.jpg"   
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+  "footer":{
+        "items":[
+            {
+                "title":"Cần Hỗ Trợ",
+                "list":[
+                    {
+                        "label":"Liên hệ chúng tôi",
+                        "path":"/contact-us"
+                    },
+                    {
+                        "label":"Theo dõi đơn hàng",
+                        "path":"/track-order"
+                    },
+                    {
+                        "label":"Chính sách hoàn trả",
+                        "path":"/refunds"
+                    }
+                ]
+            },
+            {
+                "title":"Công ty",
+                "list":[
+                    {
+                        "label":"Thông tin",
+                        "path":"/about"
+                    }
+                ]
+            },
+            {
+                "title":"Thêm thông tin",
+                "list":[
+                    {
+                        "label":"Điều khoản và Điều kiện",
+                        "path":"/terms-conditions"
+                    },
+                    {
+                        "label":"Chính sách bảo mật",
+                        "path":"/policies"
+                    },
+                    {
+                        "label":"Chính sách vận chuyển",
+                        "path":"/policies"
+                    }
+                ]
+            },
+            {
+                "title":"Vị trí",
+                "description":"Vĩnh Long"
+            }
+        ],
+        "copyright":"Copyright © 2025 Ocean and Butterfly"
+    },
+    "categories": [
+        {
+          "id": 1,
+          "name": "Makeup",
+          "code": "MAKEUP",
+          "path":"/makeup",
+          "description":"Trang điểm",
+          "types": [
+            {
+              "id": 1,
+              "name": "Phấn má",
+              "description": "Má hồng"
+            },
+            {
+              "id": 2,
+              "name": "Phấn mắt",
+              "description": "Phấn mắt"
+            },
+            {
+              "id": 3,
+              "name": "Son môi",
+              "description": "Son môi"
+            },
+            {
+              "id": 4,
+              "name": "Kẻ mắt",
+              "description": "Kẻ mắt"
+            },
+            {
+              "id": 14,
+              "name": "Mặt nạ",
+              "description": "Mặt nạ"
+            },
+            {
+              "id": 15,
+              "name": "Toner",
+              "description": "Toner"
+            },
+            {
+              "id": 16,
+              "name": "Kem nền",
+              "description": "Kem nền"
+            },
+            {
+              "id": 17,
+              "name": "Mascara",
+              "description": "Mascara"
+            },
+            {
+              "id": 18,
+              "name": "Chì kẻ mài",
+              "description": "Chì kẻ mài"
+            },
+            {
+              "id": 19,
+              "name": "Khóa nền",
+              "description": "Khóa nền"
+            },
+            {
+              "id": 20,
+              "name": "Phấn phủ",
+              "description": "Phấn phủ"
+            }
+          ],
+          "meta_data":{
+            "Brand":["L'Oréal", "Maybelline", "Innisfree", "MAC", "NARS"]
+          }
+        },
+        {
+          "id": 2,
+          "name": "Skincare",
+          "code": "SKINCARE",
+          "path":"/skincare",
+          "description":"Dưỡng da",
+          "types_id": [
+            {
+              "type_id": 5,
+              "code":"DRESSES",
+              "name": "Dresses",
+               "description":"Mô tả"
+            },
+            {
+              "type_id": 6,
+              "code":"CROPTOP",
+               "description":"Mô tả"
+            },
+            {
+              "type_id": 7,
+              "code":"SHORTS",
+               "description":"Mô tả"
+            }
+          ],
+          "meta_data":{
+            "Loại Da":["Da dầu", "Da khô", "Da hỗn hợp", "Da nhạy cảm", "Da thường"],
+            "Loại Mỹ Phẩm":["Sữa rửa mặt", "Toner", "Kem dưỡng ẩm", "Serum", "Mặt nạ", "Kem chống nắng"]
+          }
+        },
+        {
+          "id": 3,
+          "name": "Haircare",
+          "code": "HAIRCARE",
+          "path":"/haircare",
+          "description":"Chăm sóc tóc",
+          "types": [
+            {
+              "id": 8,
+              "name": "Dầu gội",
+              "description": "Dầu gội đầu"
+            },
+            {
+              "id": 9,
+              "name": "Dầu xả",
+              "description": "Dầu xả tóc"
+            },
+            {
+              "id": 10,
+              "name": "Mặt nạ tóc",
+              "description": "Mặt nạ ủ tóc"
+            },
+            {
+              "id": 11,
+              "name": "Serum tóc",
+              "description": "Serum dưỡng tóc"
+            },
+            {
+              "id": 12,
+              "name": "Dầu dưỡng tóc",
+              "description": "Dầu dưỡng tóc"
+            },
+            {
+              "id": 13,
+              "name": "Xịt dưỡng tóc",
+              "description": "Xịt dưỡng tóc"
+            }
+          ],
+          "meta_data":{
+            "Loại Tóc":["Tóc khô", "Tóc dầu", "Tóc hư tổn", "Tóc nhuộm", "Tóc thường"],
+            "Loại Sản Phẩm":["Dầu gội", "Dầu xả", "Mặt nạ tóc", "Serum", "Dầu dưỡng", "Xịt dưỡng"]
+          }
+        }
+    ],
+    "products":[
+      {
+        "id": 1,
+        "title": "Toners Klairs",
+        "description": "Nước Hoa Hồng Klairs Supple Preparation là dòng sản phẩm toner được thương hiệu Dear, Klairs thiết kế chuyên biệt dành cho làn da nhạy cảm. Với bảng thành phần chiết xuất từ thực vật và kết cấu lỏng nhẹ, thấm nhanh trên da, nước hoa hồng Klairs sẽ giúp cân bằng độ pH và cấp ẩm cho làn da hiệu quả, hỗ trợ cho các bước skincare tiếp theo đạt hiệu quả tối ưu.",
+        "category_id": 2,
+        "type_id": 10,
+        "brand": "Klairs",
+        "price": 199.999,
+        "thumbnail": "images/toners.jpg",
+        "images": ["images/toners.jpg", "images/toner-klairs-2.jpg","images/toner-klairs-3.jpg"]
+      },
+      {
+        "id": 2,
+        "title": "Kem Chống Nắng",
+        "description": "UV Defender SPF50+ PA++++ là dòng sản phẩm chống nắng da mặt đến từ thương hiệu L’Oreal của Pháp, với sự kết hợp hoàn hảo của công nghệ chống nắng bền bỉ tối đa và thành phần vàng bảo vệ da, dưỡng sáng, hỗ trợ mờ thâm nám. Chống nắng L'Oreal được trang bị 2 lớp màng bảo vệ: Màng lọc Mexoryl SX và Mexoryl XL giúp cản tia UVA và UVB tối ưu suốt cả ngày dài, hỗ trợ ngăn ngừa da lão hoá lên đến 5 năm.",
+        "category_id": 2,
+        "type_id": 9,
+        "brand": "L'Oréal",
+        "price": 232.999,
+        "thumbnail": "images/kcn.jpg",
+        "images": ["images/kcn.jpg", "images/kcn-2.jpg","images/kcn-3.jpg"]
+      },
+      {
+        "id": 3,
+        "title": "Kem Nền",
+        "description": "Kem Nền Maybelline Bắt Sáng Che Phủ Siêu Nhẹ 35ml là sản phẩm kem nền đến từ thương hiệu Maybelline - Mỹ. Sản phẩm với hạt Lumi-Pearl bắt sáng đa chiều, cho lớp finish nền mướt và ráo, tone màu tự nhiên phù hợp với tone da của người Việt Nam, cho lớp nền mịn lì, siêu nhẹ cho bạn năng động, tự tin suốt cả ngày.",
+        "category_id": 1, 
+        "type_id": 9,
+        "brand": "Maybelline",
+        "price": 203.999,
+        "thumbnail": "images/kemnenMBL.png",
+        "images": ["images/kemnenMBL.png", "images/kemnenMBL-2.jpg","images/kemnenMBL-3.jpg"]
+      },
+      {
+        "id": 4,
+        "title": "Kem Nền Carslan",
+        "description": "Kem Nền Carslan Kiềm Dầu Lâu Trôi Lasting Cover Foundation là sản phẩm kem nền đến từ thương hiệu Carslan - Trung Quốc, có khả năng kiềm dầu vượt trội mang đến lớp nền bền đẹp, không bóng nhờn suốt ngày dài. Với công thức che phủ tối ưu, dễ dàng làm mờ lỗ chân lông, thâm mụn và các khuyết điểm, tạo hiệu ứng da mịn màng, tự nhiên.",
+        "category_id": 1, 
+        "type_id": 9,
+        "brand": "Carslan",
+        "price": 245.999,
+        "thumbnail": "images/kemnenCarslan.jpg",
+        "images": ["images/kemnenCarslan.jpg", "images/kemnenCarslan-2.jpg","images/kemnenCarslan-3.jpg"]
+      },
+      {
+        "id": 5,
+        "title": "Dầu gội",
+        "description": "Dầu gội bưởi Cocoon là sản phẩm dầu gội đến từ thương hiệu mỹ phẩm thuần chay Cocoon của Việt Nam. Với thành phần chính là tinh dầu vỏ bưởi Việt Nam truyền thống kết hợp với vitamin B5, hoạt chất dưỡng ẩm Xylishine™ cùng công thức dịu nhẹ không chứa sulfate, dầu gội giúp làm sạch tóc và da đầu, giảm gãy rụng, mang lại mái tóc đen dày, chắc khỏe và mượt mà.",
+        "category_id": 3, 
+        "type_id": 8,
+        "brand": "Cocoon",
+        "price": 168.888,
+        "thumbnail": "images/daugoi_cocoon.png",
+        "images": ["images/daugoi_cocoon.png"]
+      }
+    ]
+
+}
+

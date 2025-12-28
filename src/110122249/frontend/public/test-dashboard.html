@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 Test Dashboard API Connection</h1>
+    
+    <div class="card">
+        <h2>1. Nhập Token</h2>
+        <input type="text" id="tokenInput" placeholder="Nhập authToken từ localStorage">
+        <button onclick="saveToken()">Lưu Token</button>
+        <button onclick="loadToken()">Tải Token từ localStorage</button>
+    </div>
+
+    <div class="card">
+        <h2>2. Test API Endpoints</h2>
+        <button onclick="testStats()">Test Dashboard Stats</button>
+        <button onclick="testRecentOrders()">Test Recent Orders</button>
+        <button onclick="testTopProducts()">Test Top Products</button>
+        <button onclick="testAll()">Test All</button>
+    </div>
+
+    <div class="card">
+        <h2>3. Kết quả</h2>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+        let authToken = '';
+
+        function saveToken() {
+            const token = document.getElementById('tokenInput').value;
+            localStorage.setItem('authToken', token);
+            authToken = token;
+            showResult('success', 'Token đã được lưu!');
+        }
+
+        function loadToken() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                authToken = token;
+                document.getElementById('tokenInput').value = token;
+                showResult('success', 'Token đã được tải từ localStorage!');
+            } else {
+                showResult('error', 'Không tìm thấy token trong localStorage');
+            }
+        }
+
+        function showResult(type, message, data = null) {
+            const resultDiv = document.getElementById('result');
+            let html = `<div class="${type}">${message}</div>`;
+            if (data) {
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            resultDiv.innerHTML = html;
+        }
+
+        async function testStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('success', '✅ Dashboard Stats API hoạt động!', data);
+            } catch (error) {
+                showResult('error', `❌ Lỗi: ${error.message}`, error);
+            }
+        }
+
+        async function testRecentOrders() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/recent-orders?limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('success', '✅ Recent Orders API hoạt động!', data);
+            } catch (error) {
+                showResult('error', `❌ Lỗi: ${error.message}`, error);
+            }
+        }
+
+        async function testTopProducts() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/top-products?limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('success', '✅ Top Products API hoạt động!', data);
+            } catch (error) {
+                showResult('error', `❌ Lỗi: ${error.message}`, error);
+            }
+        }
+
+        async function testAll() {
+            showResult('success', 'Đang test tất cả API...');
+            await testStats();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testRecentOrders();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testTopProducts();
+        }
+
+        // Auto load token on page load
+        window.onload = function() {
+            loadToken();
+        };
+    </script>
+</body>
+</html>

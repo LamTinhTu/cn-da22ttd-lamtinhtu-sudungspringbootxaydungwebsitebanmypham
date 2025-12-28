@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn đăng nhập Employee Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        h2 {
+            color: #667eea;
+            margin: 20px 0 15px;
+            font-size: 1.5em;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .credentials {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .credentials code {
+            background: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .success { background: #4caf50; }
+        .success:hover { background: #45a049; }
+        .danger { background: #f44336; }
+        .danger:hover { background: #da190b; }
+        .info { background: #2196F3; }
+        .info:hover { background: #0b7dda; }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.success { background: #e8f5e9; color: #2e7d32; }
+        .status.error { background: #ffebee; color: #c62828; }
+        .status.warning { background: #fff3e0; color: #ef6c00; }
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .url-box {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            color: #1565c0;
+            font-size: 1.1em;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🚀 Hướng dẫn kết nối Employee Dashboard</h1>
+            <p style="color: #666; margin-top: 10px;">
+                Hệ thống quản lý cửa hàng Ocean Butterfly Shop
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>📋 Bước 1: Kiểm tra Backend</h2>
+            <div id="backendStatus" class="status warning">
+                ⏳ Đang kiểm tra...
+            </div>
+            <button class="info" onclick="checkBackend()">🔄 Kiểm tra lại</button>
+        </div>
+
+        <div class="card">
+            <h2>🔐 Bước 2: Đăng nhập với tài khoản Staff</h2>
+            
+            <div class="credentials">
+                <strong>📌 Thông tin đăng nhập:</strong><br><br>
+                Username: <code>staff</code><br>
+                Password: <code>password</code>
+            </div>
+
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Mở trang chủ:</strong>
+                <div class="url-box">http://localhost:3000</div>
+                <button onclick="window.open('http://localhost:3000', '_blank')">
+                    🌐 Mở trang chủ
+                </button>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Click vào nút "Đăng nhập"</strong> ở góc phải màn hình
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Nhập thông tin:</strong><br>
+                - Username: <code>staff</code><br>
+                - Password: <code>password</code>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Click "Đăng Nhập"</strong> và chờ hệ thống xử lý
+            </div>
+
+            <div class="step">
+                <span class="step-number">5</span>
+                <strong>Tự động chuyển hướng</strong> đến Employee Dashboard
+                <div class="url-box">http://localhost:3000/employee</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Đăng nhập nhanh (Dành cho Developer)</h2>
+            <p style="margin-bottom: 15px;">Sử dụng form này để đăng nhập trực tiếp từ trang này:</p>
+            
+            <label><strong>Username:</strong></label>
+            <input type="text" id="username" value="staff" 
+                style="width: 100%; padding: 10px; margin: 8px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
+            
+            <label><strong>Password:</strong></label>
+            <input type="password" id="password" value="password" 
+                style="width: 100%; padding: 10px; margin: 8px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
+            
+            <div class="action-buttons">
+                <button class="success" onclick="quickLogin()">🔑 Đăng nhập & Lưu Token</button>
+                <button onclick="testDashboard()">📊 Test Dashboard API</button>
+                <button class="danger" onclick="clearData()">🗑️ Xóa Token & Đăng xuất</button>
+            </div>
+
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="card">
+            <h2>🔍 Bước 3: Kiểm tra kết nối</h2>
+            <div id="tokenStatus" class="status warning">
+                ⏳ Chưa kiểm tra
+            </div>
+            <button onclick="checkToken()">🔐 Kiểm tra Token</button>
+            <button class="info" onclick="testAllAPIs()">📡 Test tất cả API</button>
+        </div>
+
+        <div class="card">
+            <h2>❌ Xử lý lỗi thường gặp</h2>
+            
+            <div class="step">
+                <strong>Lỗi: "ERR_CONNECTION_REFUSED"</strong><br>
+                → Backend chưa chạy. Khởi động backend:
+                <pre>cd D:\110122249\backend
+.\mvnw.cmd spring-boot:run</pre>
+            </div>
+
+            <div class="step">
+                <strong>Lỗi: "Invalid credentials"</strong><br>
+                → Sai username/password. Dùng: <code>staff</code> / <code>password</code>
+            </div>
+
+            <div class="step">
+                <strong>Lỗi: "Không thể tải thống kê"</strong><br>
+                → Token hết hạn hoặc không hợp lệ. Đăng xuất và đăng nhập lại.
+            </div>
+
+            <div class="step">
+                <strong>Dashboard trống</strong><br>
+                → Chưa đăng nhập hoặc đăng nhập bằng tài khoản Customer. Phải dùng tài khoản Staff.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 URLs quan trọng</h2>
+            <div class="step">
+                <strong>Frontend:</strong>
+                <div class="url-box">http://localhost:3000</div>
+            </div>
+            <div class="step">
+                <strong>Employee Dashboard:</strong>
+                <div class="url-box">http://localhost:3000/employee</div>
+            </div>
+            <div class="step">
+                <strong>Backend API:</strong>
+                <div class="url-box">http://localhost:5000</div>
+            </div>
+            <div class="step">
+                <strong>Swagger UI:</strong>
+                <div class="url-box">http://localhost:5000/swagger-ui/index.html</div>
+                <button onclick="window.open('http://localhost:5000/swagger-ui/index.html', '_blank')">
+                    📚 Mở Swagger
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+
+        async function checkBackend() {
+            const statusDiv = document.getElementById('backendStatus');
+            statusDiv.className = 'status warning';
+            statusDiv.innerHTML = '⏳ Đang kiểm tra backend...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userAccount: 'test', userPassword: 'test' })
+                });
+
+                // Nếu nhận được response (dù là lỗi) thì backend đang chạy
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '✅ Backend đang chạy trên port 5000!';
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    ❌ Backend KHÔNG chạy!<br>
+                    Lỗi: ${error.message}<br><br>
+                    👉 Hãy khởi động backend: <code>cd backend && mvnw.cmd spring-boot:run</code>
+                `;
+            }
+        }
+
+        async function quickLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            resultDiv.className = 'status warning';
+            resultDiv.innerHTML = '⏳ Đang đăng nhập...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userAccount: username,
+                        userPassword: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+
+                if (data.success && data.data) {
+                    const { accessToken, ...userInfo } = data.data;
+                    localStorage.setItem('authToken', accessToken);
+                    localStorage.setItem('user', JSON.stringify(userInfo));
+
+                    resultDiv.className = 'status success';
+                    resultDiv.innerHTML = `
+                        ✅ Đăng nhập thành công!<br>
+                        <strong>User:</strong> ${userInfo.userName}<br>
+                        <strong>Role:</strong> ${userInfo.roleName}<br>
+                        <strong>Token:</strong> ${accessToken.substring(0, 30)}...<br><br>
+                        <button class="success" onclick="window.open('http://localhost:3000/employee', '_blank')">
+                            🚀 Mở Employee Dashboard
+                        </button>
+                    `;
+                    
+                    checkToken();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                resultDiv.className = 'status error';
+                resultDiv.innerHTML = `❌ Đăng nhập thất bại!<br>Lỗi: ${error.message}`;
+            }
+        }
+
+        async function testDashboard() {
+            const token = localStorage.getItem('authToken');
+            const resultDiv = document.getElementById('loginResult');
+
+            if (!token) {
+                resultDiv.className = 'status error';
+                resultDiv.innerHTML = '❌ Chưa có token! Hãy đăng nhập trước.';
+                return;
+            }
+
+            resultDiv.className = 'status warning';
+            resultDiv.innerHTML = '⏳ Đang test Dashboard API...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+
+                resultDiv.className = 'status success';
+                resultDiv.innerHTML = `
+                    ✅ Dashboard API hoạt động!<br>
+                    <strong>Tổng doanh thu:</strong> ${data.data.totalRevenue?.toLocaleString('vi-VN')}₫<br>
+                    <strong>Tổng đơn hàng:</strong> ${data.data.totalOrders}<br>
+                    <strong>Tổng khách hàng:</strong> ${data.data.totalCustomers}<br>
+                    <strong>Tổng sản phẩm:</strong> ${data.data.totalProducts}<br><br>
+                    <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.className = 'status error';
+                resultDiv.innerHTML = `
+                    ❌ Dashboard API thất bại!<br>
+                    Lỗi: ${error.message}<br><br>
+                    ${error.message.includes('401') || error.message.includes('403') 
+                        ? '👉 Token hết hạn. Hãy đăng nhập lại.' 
+                        : '👉 Kiểm tra backend có đang chạy không.'}
+                `;
+            }
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            const statusDiv = document.getElementById('tokenStatus');
+
+            if (!token) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ Chưa có token! Chưa đăng nhập.';
+                return;
+            }
+
+            try {
+                const parts = token.split('.');
+                const payload = JSON.parse(atob(parts[1]));
+                const exp = new Date(payload.exp * 1000);
+                const now = new Date();
+                const isExpired = exp < now;
+
+                const userObj = user ? JSON.parse(user) : {};
+
+                statusDiv.className = isExpired ? 'status error' : 'status success';
+                statusDiv.innerHTML = `
+                    ${isExpired ? '❌ Token đã hết hạn!' : '✅ Token còn hợp lệ'}<br>
+                    <strong>User:</strong> ${userObj.userName || 'N/A'}<br>
+                    <strong>Role:</strong> ${userObj.roleName || 'N/A'}<br>
+                    <strong>Hết hạn:</strong> ${exp.toLocaleString('vi-VN')}<br>
+                    <strong>Còn lại:</strong> ${isExpired ? 'Đã hết' : Math.round((exp - now) / 1000 / 60) + ' phút'}
+                    ${isExpired ? '<br><br>👉 Hãy đăng nhập lại!' : ''}
+                `;
+            } catch (e) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Token không hợp lệ!<br>Lỗi: ${e.message}`;
+            }
+        }
+
+        async function testAllAPIs() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('Chưa có token! Hãy đăng nhập trước.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.className = 'status warning';
+            resultDiv.innerHTML = '⏳ Đang test tất cả API...<br>';
+
+            const apis = [
+                { name: 'Dashboard Stats', url: '/api/v1/dashboard/stats' },
+                { name: 'Recent Orders', url: '/api/v1/dashboard/recent-orders?limit=5' },
+                { name: 'Top Products', url: '/api/v1/dashboard/top-products?limit=5' }
+            ];
+
+            let results = '';
+
+            for (const api of apis) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}${api.url}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        results += `✅ ${api.name}: OK<br>`;
+                    } else {
+                        results += `❌ ${api.name}: ${data.message}<br>`;
+                    }
+                } catch (error) {
+                    results += `❌ ${api.name}: ${error.message}<br>`;
+                }
+            }
+
+            resultDiv.className = 'status success';
+            resultDiv.innerHTML = `<strong>Kết quả test API:</strong><br><br>${results}`;
+        }
+
+        function clearData() {
+            if (confirm('Bạn có chắc muốn xóa token và đăng xuất?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                document.getElementById('loginResult').innerHTML = '';
+                document.getElementById('tokenStatus').className = 'status warning';
+                document.getElementById('tokenStatus').innerHTML = '⏳ Đã xóa token. Chưa đăng nhập.';
+                alert('✅ Đã xóa token!');
+            }
+        }
+
+        // Auto check on load
+        window.onload = function() {
+            checkBackend();
+            checkToken();
+        };
+    </script>
+</body>
+</html>
