@@ -84,7 +84,12 @@ const CheckoutPage = () => {
             console.log("Order response:", response);
             toast.success("Đặt hàng thành công!");
             dispatch(clearCart());
-            navigate('/my-orders'); 
+            
+            if (formData.paymentMethod === 'BANK_TRANSFER') {
+                navigate('/payment-transfer', { state: { order: response.data } });
+            } else {
+                navigate('/my-orders'); 
+            } 
         } catch (error) {
             console.error("Order error:", error);
             console.error("Error response:", error.response?.data);

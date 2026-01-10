@@ -25,12 +25,12 @@ public class RegisterRequestDTO {
     private String userName;
     
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "RBSDT: Phone must be exactly 10 or 11 digits")
+    @Pattern(regexp = "^(0[0-9]{9,10}|\\+1[0-9]{10})$", message = "RBSDT: Phone must be VN (0XXX) or US (+1XXX) format")
     @Schema(
-        description = "Phone number (10-11 digits)",
+        description = "Phone number (VN: 0XXXXXXXXX or US: +1XXXXXXXXXX)",
         example = "0912345678",
         requiredMode = Schema.RequiredMode.REQUIRED,
-        pattern = "^[0-9]{10,11}$"
+        pattern = "^(0[0-9]{9,10}|\\+1[0-9]{10})$"
     )
     private String userPhone;
     
@@ -60,6 +60,15 @@ public class RegisterRequestDTO {
         example = "MALE"
     )
     private Gender userGender;
+
+    @Schema(
+        description = "User birth date", 
+        example = "1990-05-15", 
+        type = "string", 
+        format = "date"
+    )
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private java.time.LocalDate userBirthDate;
 
     @Schema(
         description = "Address",

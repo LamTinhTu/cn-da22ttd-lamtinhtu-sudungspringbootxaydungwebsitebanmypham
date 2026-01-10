@@ -19,8 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.oceanbutterflyshop.backend.dtos.ApiResponse;
 import com.oceanbutterflyshop.backend.dtos.request.LoginRequestDTO;
 import com.oceanbutterflyshop.backend.dtos.request.RegisterRequestDTO;
+import com.oceanbutterflyshop.backend.dtos.request.SendOTPRequestDTO;
+import com.oceanbutterflyshop.backend.dtos.request.VerifyOTPRequestDTO;
 import com.oceanbutterflyshop.backend.dtos.response.AuthResponseDTO;
+import com.oceanbutterflyshop.backend.dtos.response.OTPResponseDTO;
 import com.oceanbutterflyshop.backend.services.AuthService;
+import com.oceanbutterflyshop.backend.services.OTPService;
 
 /**
  * REST Controller cho các endpoint xác thực
@@ -40,6 +44,7 @@ import com.oceanbutterflyshop.backend.services.AuthService;
 public class AuthController {
     
     private final AuthService authService;
+    private final OTPService otpService;
     
     /**
      * Đăng ký tài khoản khách hàng mới
@@ -144,6 +149,69 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .status(HttpStatus.OK.value())
                 .message("If the phone number exists, an SMS has been sent.")
+                .build());
+    }
+    
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password", description = "Reset user password using phone number verification")
+    @SecurityRequirement(name = "")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody com.oceanbutterflyshop.backend.dtos.request.ResetPasswordRequestDTO request) {
+        log.info("POST /api/v1/auth/reset-password - Reset password request for phone: {}", request.getPhoneNumber());
+        
+        authService.resetPassword(request);
+        
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(HttpStatus.OK.value())
+                .message("Password reset successfully")
+                .build());
+    }
+    
+    @PostMapping("/check-phone")
+    @Operation(summary = "Check phone exists", description = "Check if phone number exists in the system")
+    @SecurityRequirement(name = "")
+    public ResponseEntity<ApiResponse<com.oceanbutterflyshop.backend.dtos.response.CheckPhoneResponseDTO>> checkPhone(@Valid @RequestBody com.oceanbutterflyshop.backend.dtos.request.CheckPhoneRequestDTO request) {
+        log.info("POST /api/v1/auth/check-phone - Check phone: {}", request.getPhoneNumber());
+        
+        boolean exists = authService.checkPhoneExists(request.getPhoneNumber());
+        
+        com.oceanbutterflyshop.backend.dtos.response.CheckPhoneResponseDTO response = 
+            com.oceanbutterflyshop.backend.dtos.response.CheckPhoneResponseDTO.builder()
+                .exists(exists)
+                .message(exists ? "Phone number exists" : "Phone number not found")
+                .build();
+        
+        return ResponseEntity.ok(ApiResponse.<com.oceanbutterflyshop.backend.dtos.response.CheckPhoneResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Check completed")
+                .data(response)
+                .build());
+    }
+    
+    @PostMapping("/send-otp")
+    @Operation(summary = "Send OTP", description = "Send OTP to phone number for registration verification")
+    @SecurityRequirement(name = "")
+    public ResponseEntity<ApiResponse<OTPResponseDTO>> sendOTP(@Valid @RequestBody SendOTPRequestDTO request) {
+        otpService.sendOTP(request.getPhoneNumber());
+        
+        OTPResponseDTO response = OTPResponseDTO.builder()
+                .message("Mã OTP đã được gửi đến số điện thoại của bạn")
+                .build();
+        
+        return ResponseEntity.ok(ApiResponse.<OTPResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("OTP sent successfully")
+                .data(response)
+                .build());
+    }
+    
+    @PostMapping("/verify-otp")
+    @Operation(summary = "Verify OTP", description = "Verify OTP code for phone number")
+    @SecurityRequirement(name = "")
+    public ResponseEntity<ApiResponse<Void>> verifyOTP(@Valid @RequestBody VerifyOTPRequestDTO request) {
+        otpService.verifyOTP(request.getPhoneNumber(), request.getOtp());
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(HttpStatus.OK.value())
+                .message("Xác thực OTP thành công")
                 .build());
     }
 }

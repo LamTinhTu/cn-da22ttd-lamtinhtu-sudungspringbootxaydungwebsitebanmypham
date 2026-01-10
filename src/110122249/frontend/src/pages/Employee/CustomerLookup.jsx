@@ -105,8 +105,6 @@ const CustomerLookup = () => {
                                         <th className="px-6 py-4 font-semibold text-gray-600">Giới tính</th>
                                         <th className="px-6 py-4 font-semibold text-gray-600">Số điện thoại</th>
                                         <th className="px-6 py-4 font-semibold text-gray-600">Tài khoản</th>
-                                        <th className="px-6 py-4 font-semibold text-gray-600">Ngày sinh</th>
-                                        <th className="px-6 py-4 font-semibold text-gray-600">Địa chỉ</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -117,10 +115,6 @@ const CustomerLookup = () => {
                                             <td className="px-6 py-4 text-gray-600">{getGenderText(customer.userGender)}</td>
                                             <td className="px-6 py-4 text-gray-600">{customer.userPhone || 'N/A'}</td>
                                             <td className="px-6 py-4 text-gray-600">{customer.userAccount}</td>
-                                            <td className="px-6 py-4 text-gray-600">{customer.userBirthDate || 'N/A'}</td>
-                                            <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={customer.userAddress}>
-                                                {customer.userAddress || 'N/A'}
-                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

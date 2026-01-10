@@ -17,6 +17,7 @@ public interface OrderService {
     OrderResponse createOrder(OrderRequest orderRequest, String username);
     OrderResponse updateOrderStatus(Integer orderId, String newStatus);
     OrderResponse updatePayment(Integer orderId, String paymentMethod);
+    OrderResponse updatePaymentStatus(Integer orderId, Boolean isPaid);
     void cancelOrder(Integer orderId, String currentUsername);
     void deleteOrder(Integer orderId, String currentUsername);
     BigDecimal calculateOrderAmount(List<Integer> productIds, List<Integer> quantities);

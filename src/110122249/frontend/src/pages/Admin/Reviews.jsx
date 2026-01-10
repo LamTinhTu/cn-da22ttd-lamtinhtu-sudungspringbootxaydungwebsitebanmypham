@@ -131,6 +131,12 @@ const Reviews = () => {
                         </div>
                     )}
                 </div>
+                
+                <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-gray-700">
+                        Hiển thị <span className="font-medium">{reviews.length}</span> kết quả
+                    </p>
+                </div>
             </div>
             <ConfirmModal
                 isOpen={showConfirm}

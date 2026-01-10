@@ -125,9 +125,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGlobalException(
             Exception ex, WebRequest request) {
+        ex.printStackTrace(); // Print stack trace to console for debugging
         return new ResponseEntity<>(
             ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), 
-                            "An unexpected error occurred", ex.getMessage()),
+                            "An unexpected error occurred: " + ex.getMessage(), ex.getMessage()),
             HttpStatus.INTERNAL_SERVER_ERROR
         );
     }

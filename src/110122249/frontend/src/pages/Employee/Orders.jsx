@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import EmployeeHeader from '../../components/Employee/EmployeeHeader';
-import { getAllOrders, updateOrderStatus } from '../../api/order';
+import { getAllOrders, updateOrderStatus, updatePaymentStatus } from '../../api/order';
 import { toast } from 'react-toastify';
 
 const Orders = () => {
@@ -82,6 +82,17 @@ const Orders = () => {
             console.error(err);
             const errorMessage = err.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái';
             toast.error(errorMessage);
+        }
+    };
+
+    const handlePaymentStatusUpdate = async (order, isPaid) => {
+        try {
+            await updatePaymentStatus(order.orderId, isPaid);
+            toast.success(`Đã cập nhật trạng thái thanh toán: ${isPaid ? 'Đã nhận tiền' : 'Chưa nhận tiền'}`);
+            fetchOrders();
+        } catch (err) {
+            console.error(err);
+            toast.error('Cập nhật trạng thái thanh toán thất bại');
         }
     };
 
@@ -176,9 +187,35 @@ const Orders = () => {
                                             </td>
                                             <td className="px-6 py-4 text-gray-600">
                                                 <div>{getPaymentMethodText(order.paymentMethod)}</div>
-                                                {order.paymentDate && (
-                                                    <div className="text-xs text-gray-400">
-                                                        {new Date(order.paymentDate).toLocaleDateString('vi-VN')}
+                                                {order.paymentDate ? (
+                                                    <div className="text-xs text-green-600 font-semibold">
+                                                        Đã thanh toán: {new Date(order.paymentDate).toLocaleDateString('vi-VN')}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-xs text-red-500 font-semibold">
+                                                        Chưa thanh toán
+                                                    </div>
+                                                )}
+                                                
+                                                {order.paymentMethod === 'BANK_TRANSFER' && (
+                                                    <div className="mt-1 flex gap-1">
+                                                        {!order.paymentDate ? (
+                                                            <button 
+                                                                onClick={() => handlePaymentStatusUpdate(order, true)}
+                                                                className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200"
+                                                                title="Xác nhận đã nhận tiền"
+                                                            >
+                                                                Đã nhận tiền
+                                                            </button>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={() => handlePaymentStatusUpdate(order, false)}
+                                                                className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded hover:bg-gray-200"
+                                                                title="Đánh dấu chưa nhận tiền"
+                                                            >
+                                                                Chưa nhận tiền
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </td>
@@ -204,6 +241,12 @@ const Orders = () => {
                             </table>
                         </div>
                     )}
+                </div>
+                
+                <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-gray-700">
+                        Hiển thị <span className="font-medium">{orders.length}</span> kết quả
+                    </p>
                 </div>
 
                 {/* Detail Modal */}

@@ -13,9 +13,11 @@ import com.oceanbutterflyshop.backend.entities.Role;
 import com.oceanbutterflyshop.backend.entities.User;
 import com.oceanbutterflyshop.backend.exceptions.BadRequestException;
 import com.oceanbutterflyshop.backend.exceptions.ResourceNotFoundException;
+import com.oceanbutterflyshop.backend.repositories.OTPVerificationRepository;
 import com.oceanbutterflyshop.backend.repositories.RoleRepository;
 import com.oceanbutterflyshop.backend.repositories.UserRepository;
 import com.oceanbutterflyshop.backend.services.AuthService;
+import com.oceanbutterflyshop.backend.services.OTPService;
 import com.oceanbutterflyshop.backend.utils.CodeGeneratorUtils;
 import com.oceanbutterflyshop.backend.utils.JwtUtils;
 
@@ -33,6 +35,8 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final CodeGeneratorUtils codeGeneratorUtils;
     private final JwtUtils jwtUtils;
+    private final OTPService otpService;
+    private final OTPVerificationRepository otpVerificationRepository;
     
     private static final String CUSTOMER_ROLE_CODE = "CUS";
     private static final String CUSTOMER_USER_PREFIX = "KH";
@@ -66,6 +70,7 @@ public class AuthServiceImpl implements AuthService {
         user.setUserPhone(request.getUserPhone());
         user.setUserAccount(request.getUserAccount());
         user.setUserGender(request.getUserGender());
+        user.setUserBirthDate(request.getUserBirthDate());
         user.setUserAddress(request.getUserAddress());
         
         // 6. Mã hóa mật khẩu bằng BCrypt
@@ -137,6 +142,31 @@ public class AuthServiceImpl implements AuthService {
         
         // TODO: Tích hợp SMS Gateway để gửi mã OTP
         log.info("SMS sent to {} with OTP: 123456 (Simulation)", request.getPhoneNumber());
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(com.oceanbutterflyshop.backend.dtos.request.ResetPasswordRequestDTO request) {
+        log.info("Reset password request for phone: {}", request.getPhoneNumber());
+        
+        // Tìm người dùng theo số điện thoại
+        User user = userRepository.findByUserPhone(request.getPhoneNumber())
+                .orElseThrow(() -> new BadRequestException("Số điện thoại không tồn tại trong hệ thống"));
+        
+        // Mã hóa mật khẩu mới
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setUserPassword(encodedPassword);
+        
+        // Lưu người dùng với mật khẩu mới
+        userRepository.save(user);
+        
+        log.info("Password reset successfully for user: {}", user.getUserAccount());
+    }
+
+    @Override
+    public boolean checkPhoneExists(String phoneNumber) {
+        log.info("Check phone exists: {}", phoneNumber);
+        return userRepository.existsByUserPhone(phoneNumber);
     }
 
     private String generateUniqueUserCode(String prefix) {

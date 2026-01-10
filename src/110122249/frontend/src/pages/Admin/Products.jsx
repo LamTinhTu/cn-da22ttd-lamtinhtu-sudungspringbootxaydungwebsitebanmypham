@@ -627,6 +627,12 @@ const Products = () => {
                     </table>
                     )}
                 </div>
+                
+                <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-gray-700">
+                        Hiển thị <span className="font-medium">{products.length}</span> kết quả
+                    </p>
+                </div>
             </div>
             <ConfirmModal
                 isOpen={showConfirm}

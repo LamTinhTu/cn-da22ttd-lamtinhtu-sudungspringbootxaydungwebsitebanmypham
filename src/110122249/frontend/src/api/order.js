@@ -42,6 +42,20 @@ export const updateOrderStatus = async (orderId, status) => {
     }
 };
 
+export const updatePaymentStatus = async (orderId, isPaid) => {
+    const url = `${API_BASE_URL}/api/v1/orders/${orderId}/payment-status`;
+    try {
+        const response = await axios.put(url, null, {
+            params: { isPaid },
+            headers: getHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating payment status:", error);
+        throw error;
+    }
+};
+
 export const cancelOrder = async (orderId) => {
     const url = `${API_BASE_URL}/api/v1/orders/${orderId}/cancel`;
     try {

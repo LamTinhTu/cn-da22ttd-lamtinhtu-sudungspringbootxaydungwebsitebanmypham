@@ -17,6 +17,7 @@ import EmployeeOrders from "./pages/Employee/Orders";
 import CustomerLookup from "./pages/Employee/CustomerLookup";
 import CartPage from "./pages/Cart/CartPage";
 import CheckoutPage from "./pages/Checkout/CheckoutPage";
+import PaymentTransferPage from "./pages/Checkout/PaymentTransferPage";
 import MyOrders from "./pages/Orders/MyOrders";
 import AboutUs from "./pages/AboutUs";
 
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
             {
                 path: "/checkout",
                 element: <CheckoutPage />
+            },
+            {
+                path: "/payment-transfer",
+                element: <PaymentTransferPage />
             },
             {
                 path: "/my-orders",

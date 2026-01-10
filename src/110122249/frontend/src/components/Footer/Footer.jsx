@@ -12,7 +12,16 @@ const Footer = () => {
                 </div>
                 <div className='text-left'>
                     <p className='text-[16px] font-semibold mb-3'>Vị trí:</p>
-                    <p className='text-[14px]'>Ấp Xoài Lơ, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long</p>
+                    <p className='text-[14px]'>
+                        <a 
+                            href="https://www.google.com/maps?q=Ấp+Xoài+Lơ,+Xã+Lưu+Nghiệp+Anh,+tỉnh+Vĩnh+Long" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="hover:text-gray-300 transition-colors duration-200"
+                        >
+                            Ấp Xoài Lơ, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long
+                        </a>
+                    </p>
                 </div>
             </div>
             <p className='text-sm text-white text-center pt-4 border-t border-gray-700'>Copyright © 2025 Ocean and Butterfly</p>

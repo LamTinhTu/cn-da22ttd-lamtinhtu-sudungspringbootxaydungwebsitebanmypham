@@ -42,6 +42,38 @@ export const registerAPI = async (body)=>{
     }
 }
 
+export const resetPasswordAPI = async (body) => {
+    const url = API_BASE_URL + API_URLS.RESET_PASSWORD;
+    try {
+        const response = await axios(url, {
+            method: "POST",
+            data: body,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    } catch (err) {
+        throw err;
+    }
+}
+
+export const checkPhoneExistsAPI = async (body) => {
+    const url = API_BASE_URL + API_URLS.CHECK_PHONE;
+    try {
+        const response = await axios(url, {
+            method: "POST",
+            data: body,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    } catch (err) {
+        throw err;
+    }
+}
+
 export const forgotPasswordAPI = async (body) => {
     const url = API_BASE_URL + API_URLS.FORGOT_PASSWORD;
     try {

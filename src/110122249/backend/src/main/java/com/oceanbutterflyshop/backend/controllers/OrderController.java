@@ -150,6 +150,16 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success("Order payment updated successfully", updatedOrder));
     }
 
+    @PutMapping("/{orderId}/payment-status")
+    @Operation(summary = "Update order payment status (paid/unpaid)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<ApiResponse<OrderResponse>> updatePaymentStatus(
+            @PathVariable Integer orderId,
+            @RequestParam Boolean isPaid) {
+        OrderResponse updatedOrder = orderService.updatePaymentStatus(orderId, isPaid);
+        return ResponseEntity.ok(ApiResponse.success("Order payment status updated successfully", updatedOrder));
+    }
+
     @PutMapping("/{orderId}/cancel")
     @Operation(summary = "Cancel order", description = "Customers can only cancel their own orders. Admin/Staff can cancel any order.")
     public ResponseEntity<ApiResponse<Object>> cancelOrder(

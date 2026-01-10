@@ -4,12 +4,14 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../../store/features/cartSlice';
 import { toast } from 'react-toastify';
 import { CartIcon } from '../../components/common/CartIcon';
-import SvgFavourite from '../../components/common/SvgFavourite';
 import { getProductById } from '../../api/fetchProductDetail';
 import { getReviewsByProduct, getProductRating, createReview, updateReview, deleteReview } from '../../api/review';
 import { API_BASE_URL } from '../../api/constant';
 import { getUser } from '../../utils/jwt-helper';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import LoginModal from '../../components/Auth/LoginModal';
+import RegisterModal from '../../components/Auth/RegisterModal';
+import ForgotPasswordModal from '../../components/Auth/ForgotPasswordModal';
 
 const ProductDetails = () => {
     const { productId } = useParams();
@@ -28,6 +30,9 @@ const ProductDetails = () => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
     const [confirmMessage, setConfirmMessage] = useState('');
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
     const user = getUser();
 
     useEffect(() => {
@@ -106,6 +111,12 @@ const ProductDetails = () => {
         : `${API_BASE_URL}/uploads/placeholder.jpg`;
 
     const handleAddToCart = () => {
+        if (!user) {
+            toast.info('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+            setShowLoginModal(true);
+            return;
+        }
+        
         if (!product) return;
         
         const cartItem = {
@@ -135,7 +146,8 @@ const ProductDetails = () => {
     const handleSubmitReview = async (e) => {
         e.preventDefault();
         if (!user) {
-            toast.error('Vui lòng đăng nhập để đánh giá');
+            toast.info('Vui lòng đăng nhập để viết đánh giá');
+            setShowLoginModal(true);
             return;
         }
 
@@ -349,9 +361,6 @@ const ProductDetails = () => {
                         >
                             <CartIcon className="w-5 h-5 fill-current" />
                             {product.quantityStock === 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
-                        </button>
-                        <button className="w-14 h-14 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
-                            <SvgFavourite />
                         </button>
                     </div>
 
@@ -572,6 +581,36 @@ const ProductDetails = () => {
                 onConfirm={confirmAction}
                 title="Xác nhận xóa"
                 message={confirmMessage}
+            />
+            
+            {/* Auth Modals */}
+            <LoginModal 
+                isOpen={showLoginModal} 
+                onClose={() => setShowLoginModal(false)}
+                onSwitchToRegister={() => {
+                    setShowLoginModal(false);
+                    setShowRegisterModal(true);
+                }}
+                onSwitchToForgotPassword={() => {
+                    setShowLoginModal(false);
+                    setShowForgotPasswordModal(true);
+                }}
+            />
+            <RegisterModal 
+                isOpen={showRegisterModal} 
+                onClose={() => setShowRegisterModal(false)}
+                onSwitchToLogin={() => {
+                    setShowRegisterModal(false);
+                    setShowLoginModal(true);
+                }}
+            />
+            <ForgotPasswordModal 
+                isOpen={showForgotPasswordModal} 
+                onClose={() => setShowForgotPasswordModal(false)}
+                onSwitchToLogin={() => {
+                    setShowForgotPasswordModal(false);
+                    setShowLoginModal(true);
+                }}
             />
         </div>
     );

@@ -17,6 +17,7 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUserAccount(String userAccount);
     Optional<User> findByUserCode(String userCode);
+    Optional<User> findByUserPhone(String userPhone);
     boolean existsByUserAccount(String userAccount);
     boolean existsByUserPhone(String userPhone);
     boolean existsByUserCode(String userCode);

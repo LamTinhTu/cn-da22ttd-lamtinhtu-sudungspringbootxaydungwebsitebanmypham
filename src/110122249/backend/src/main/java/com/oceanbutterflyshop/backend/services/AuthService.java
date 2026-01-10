@@ -44,4 +44,17 @@ public interface AuthService {
      * @param request Yêu cầu chứa số điện thoại
      */
     void forgotPassword(com.oceanbutterflyshop.backend.dtos.request.ForgotPasswordRequestDTO request);
+
+    /**
+     * Đặt lại mật khẩu người dùng
+     * @param request Yêu cầu chứa số điện thoại và mật khẩu mới
+     */
+    void resetPassword(com.oceanbutterflyshop.backend.dtos.request.ResetPasswordRequestDTO request);
+
+    /**
+     * Kiểm tra số điện thoại có tồn tại trong hệ thống không
+     * @param phoneNumber Số điện thoại cần kiểm tra
+     * @return true nếu tồn tại, false nếu không
+     */
+    boolean checkPhoneExists(String phoneNumber);
 }

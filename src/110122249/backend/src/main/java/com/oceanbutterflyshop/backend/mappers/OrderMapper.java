@@ -102,7 +102,9 @@ public class OrderMapper {
         OrderResponse response = new OrderResponse();
         response.setOrderId(order.getOrderId());
         response.setOrderCode(order.getOrderCode());
-        response.setUserId(order.getUser().getUserId());
+        if (order.getUser() != null) {
+            response.setUserId(order.getUser().getUserId());
+        }
         response.setOrderDate(order.getOrderDate());
         response.setOrderStatus(order.getOrderStatus().name()); // Trả về enum name (NEW, PROCESSING, etc.)
         response.setOrderAmount(order.getOrderAmount()); // Đã là BigDecimal

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { registerAPI } from '../../api/authentication';
+import { useNavigate } from 'react-router-dom';
+import { registerAPI, loginAPI } from '../../api/authentication';
 import { toast } from 'react-toastify';
 import './AuthModal.css';
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         userName: '',
         userAccount: '',
@@ -24,6 +26,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             [e.target.name]: e.target.value
         });
         setError('');
+    };
+
+    const validatePhoneNumber = (phone) => {
+        // Kiểm tra định dạng số điện thoại Việt Nam hoặc US
+        const vnPhoneRegex = /^0[0-9]{9,10}$/;
+        const usPhoneRegex = /^\+1[0-9]{10}$/;
+        return vnPhoneRegex.test(phone) || usPhoneRegex.test(phone);
     };
 
     const handleSubmit = async (e) => {
@@ -57,17 +66,45 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             console.log('Register response:', response);
             
             if (response && response.status === 200) {
-                toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-                setFormData({
-                    userName: '',
-                    userAccount: '',
-                    userPassword: '',
-                    confirmPassword: '',
-                    userPhone: '',
-                    userGender: 'MALE',
-                    userAddress: ''
-                });
-                onSwitchToLogin();
+                // Tự động đăng nhập sau khi đăng ký thành công
+                try {
+                    const loginResponse = await loginAPI({
+                        userAccount: formData.userAccount,
+                        userPassword: formData.userPassword
+                    });
+
+                    if (loginResponse && loginResponse.status === 200) {
+                        const { accessToken, refreshToken } = loginResponse.data;
+                        
+                        // Lưu token vào localStorage
+                        localStorage.setItem('accessToken', accessToken);
+                        localStorage.setItem('refreshToken', refreshToken);
+                        
+                        toast.success('Đăng ký và đăng nhập thành công!');
+                        
+                        // Đóng modal
+                        onClose();
+                        
+                        // Chuyển về trang chủ
+                        navigate('/');
+                        
+                        // Reload để cập nhật trạng thái đăng nhập
+                        window.location.reload();
+                    }
+                } catch (loginErr) {
+                    console.error('Auto login failed:', loginErr);
+                    toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+                    setFormData({
+                        userName: '',
+                        userAccount: '',
+                        userPassword: '',
+                        confirmPassword: '',
+                        userPhone: '',
+                        userGender: 'MALE',
+                        userAddress: ''
+                    });
+                    onSwitchToLogin();
+                }
             }
         } catch (err) {
             console.error('Register failed:', err);
@@ -165,10 +202,11 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                             name="userPhone"
                             value={formData.userPhone}
                             onChange={handleChange}
-                            placeholder="Nhập số điện thoại (10-11 số)"
+                            placeholder="Nhập số điện thoại (10-11 chữ số)"
                             required
-                            pattern="[0-9]{10,11}"
-                            title="Số điện thoại phải có 10 hoặc 11 chữ số"
+                            pattern="^(0[0-9]{9,10}|\+1[0-9]{10})$"
+                            title="Số điện thoại VN (0XXX) hoặc US (+1XXX)"
+                            maxLength="12"
                         />
                     </div>
 

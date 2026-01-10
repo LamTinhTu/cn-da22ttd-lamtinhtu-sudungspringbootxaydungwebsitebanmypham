@@ -240,7 +240,26 @@ public class OrderServiceImpl implements OrderService {
         }
         
         order.setPaymentMethod(method);
-        order.setPaymentDate(LocalDate.now());
+        // Only set payment date if it's not already set, or maybe we shouldn't set it here automatically?
+        // Keeping existing behavior for now, but maybe we should remove it if we have explicit status update
+        if (order.getPaymentDate() == null) {
+             order.setPaymentDate(LocalDate.now());
+        }
+        
+        Order updatedOrder = orderRepository.save(order);
+        return orderMapper.toResponse(updatedOrder);
+    }
+
+    @Override
+    public OrderResponse updatePaymentStatus(Integer orderId, Boolean isPaid) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+        
+        if (Boolean.TRUE.equals(isPaid)) {
+            order.setPaymentDate(LocalDate.now());
+        } else {
+            order.setPaymentDate(null);
+        }
         
         Order updatedOrder = orderRepository.save(order);
         return orderMapper.toResponse(updatedOrder);
